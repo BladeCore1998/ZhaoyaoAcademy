@@ -90,6 +90,7 @@ docker create \
   --network "$DOCKER_NETWORK" \
   --publish 3000:3000 \
   --env-file "$ENV_FILE" \
+  --env HOSTNAME=0.0.0.0 \
   --env TZ=Asia/Shanghai \
   "$APP_IMAGE" >/dev/null
 docker start "$APP_CONTAINER" >/dev/null
