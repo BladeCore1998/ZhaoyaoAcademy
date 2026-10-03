@@ -35,6 +35,9 @@
 │   ├── front/docker-compose.yml  # academy-front 和数据库迁移
 │   ├── py/docker-compose.yml     # academy-py
 │   └── README.md                 # Docker 服务说明
+├── deploy/
+│   ├── scripts/                  # 平台构建与部署脚本
+│   └── README.md                 # 平台脚本说明
 ├── docs/adr/                   # 架构决策记录
 ├── CONTEXT.md                  # 项目领域语言
 ├── AGENTS.md                   # 项目协作约定
@@ -63,6 +66,8 @@ docker compose -f docker/common/docker-compose.yml down
 ```
 
 详细的 Compose 拆分、日志、数据卷和国内依赖源说明见 [Docker 部署说明](docker/README.md)。
+
+平台配置脚本的仓库版本位于 [deploy/](deploy/)，其中分别提供前端和 Python 服务的构建、迁移、部署与健康检查脚本。使用方式和环境变量说明见 [平台部署脚本说明](deploy/README.md)。
 
 默认服务地址：
 

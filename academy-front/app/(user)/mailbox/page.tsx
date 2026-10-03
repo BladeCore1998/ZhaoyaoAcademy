@@ -30,7 +30,7 @@ export default async function MailboxPage() {
 
   return (
     <div className="mx-auto max-w-[1180px] px-6 pb-20 pt-20 max-md:pt-5">
-      <p className="eyebrow">月下信箱</p>
+      <p className="eyebrow">招摇信箱</p>
       <h1>棉花糖</h1>
       <p className="page-intro">
         你的来信默认只有夭夭和管理员能看见。被管理员设置为公开后，才会出现在信箱墙。

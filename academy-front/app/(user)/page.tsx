@@ -19,7 +19,7 @@ const features = [
   },
   {
     href: "/mailbox",
-    eyebrow: "月下信箱",
+    eyebrow: "招摇信箱",
     title: "棉花糖",
     description: "写一封信，等一盏灯亮起来。",
     icon: Mail,

@@ -37,7 +37,6 @@ services:
     environment:
       DATABASE_URL: mysql://academy:academy@mysql:3306/academy
       REDIS_URL: redis://redis:6379
-      BETTER_AUTH_URL: http://localhost:3000
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: academy
       MINIO_SECRET_KEY: academy-secret

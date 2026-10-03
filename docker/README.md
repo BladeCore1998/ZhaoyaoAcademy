@@ -11,6 +11,8 @@ docker/
 
 三个文件通过固定名称 `zhaoyao-academy-net` 连接。先启动公共服务，再按需启动前端和 Python 服务：
 
+平台构建和部署脚本不放在 Compose 文件中，统一记录在 [`deploy/scripts/`](../deploy/scripts/)。脚本默认使用共享网络 `zhaoyao-academy-net`，具体参数和执行顺序见 [`deploy/README.md`](../deploy/README.md)。
+
 ```powershell
 docker compose -f docker/common/docker-compose.yml up -d
 docker compose -f docker/front/docker-compose.yml up -d --build
