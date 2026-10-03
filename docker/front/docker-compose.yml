@@ -1,0 +1,58 @@
+services:
+  academy-migrate:
+    build:
+      context: ../../academy-front
+      dockerfile: Dockerfile
+      target: migrator
+    env_file:
+      - path: ../../academy-front/.env.example
+        required: true
+      - path: ../../academy-front/.env
+        required: false
+    environment:
+      DATABASE_URL: mysql://academy:academy@mysql:3306/academy
+      TZ: Asia/Shanghai
+    command:
+      - sh
+      - -c
+      - >-
+        node -e 'const net=require("net"); const deadline=Date.now()+120000;
+        (function wait(){const socket=net.createConnection({host:"mysql",port:3306});
+        socket.on("connect",()=>{socket.end(); process.exit(0)}).on("error",()=>{socket.destroy();
+        if(Date.now()>deadline) process.exit(1); setTimeout(wait,2000)})})()'
+        && pnpm db:migrate
+    networks:
+      - academy-net
+    restart: "no"
+
+  academy-front:
+    build:
+      context: ../../academy-front
+      dockerfile: Dockerfile
+    env_file:
+      - path: ../../academy-front/.env.example
+        required: true
+      - path: ../../academy-front/.env
+        required: false
+    environment:
+      DATABASE_URL: mysql://academy:academy@mysql:3306/academy
+      REDIS_URL: redis://redis:6379
+      BETTER_AUTH_URL: http://localhost:3000
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: academy
+      MINIO_SECRET_KEY: academy-secret
+      MINIO_BUCKET: academy-assets
+      TZ: Asia/Shanghai
+    ports:
+      - "3000:3000"
+    depends_on:
+      academy-migrate:
+        condition: service_completed_successfully
+    networks:
+      - academy-net
+    restart: unless-stopped
+
+networks:
+  academy-net:
+    external: true
+    name: zhaoyao-academy-net

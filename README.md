@@ -31,8 +31,10 @@
 │   ├── pyproject.toml          # Poetry 项目配置
 │   └── poetry.lock             # Python 依赖锁定文件
 ├── docker/
-│   ├── docker-compose.yml      # 本地和开发环境编排
-│   └── README.md               # Docker 服务说明
+│   ├── common/docker-compose.yml # MySQL、Redis、MinIO 和共享网络
+│   ├── front/docker-compose.yml  # academy-front 和数据库迁移
+│   ├── py/docker-compose.yml     # academy-py
+│   └── README.md                 # Docker 服务说明
 ├── docs/adr/                   # 架构决策记录
 ├── CONTEXT.md                  # 项目领域语言
 ├── AGENTS.md                   # 项目协作约定
@@ -44,17 +46,23 @@
 
 ### 使用 Docker Compose
 
-推荐使用 Docker Compose 启动完整开发环境：
+公共服务、前端和 Python 服务使用独立的 Compose 文件，先创建共享网络和公共服务：
 
 ```powershell
-docker compose -f docker/docker-compose.yml up --build
+docker compose -f docker/common/docker-compose.yml up -d
+docker compose -f docker/front/docker-compose.yml up -d --build
+docker compose -f docker/py/docker-compose.yml up -d --build
 ```
 
-首次启动会构建前端和 Python 服务，并启动 MySQL、Redis 与 MinIO。停止服务：
+停止服务时按相反顺序执行：
 
 ```powershell
-docker compose -f docker/docker-compose.yml down
+docker compose -f docker/front/docker-compose.yml down
+docker compose -f docker/py/docker-compose.yml down
+docker compose -f docker/common/docker-compose.yml down
 ```
+
+详细的 Compose 拆分、日志、数据卷和国内依赖源说明见 [Docker 部署说明](docker/README.md)。
 
 默认服务地址：
 
@@ -74,7 +82,7 @@ Docker Compose 使用开发环境默认凭据，仅适用于本地开发。生�
 
 ### 前端
 
-要求 Node.js 22.x 和 pnpm 11.x。进入前端目录后执行：
+要求 Node.js 22.x 和 pnpm 11.x。默认依赖源为 npmmirror：
 
 ```powershell
 cd academy-front
@@ -96,7 +104,7 @@ pnpm db:migrate
 
 ### FastAPI 服务
 
-要求 Python 3.12 和 Poetry 2.x。进入 Python 服务目录后执行：
+要求 Python 3.12 和 Poetry 2.x。项目已配置清华 PyPI 源：
 
 ```powershell
 cd academy-py
@@ -119,6 +127,15 @@ poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `academy-py/.env.example`
 
 不要把真实密钥提交到仓库。Docker Compose 中的默认账号和密码仅用于本地开发。
+
+## Jenkins
+
+两个子项目各自包含可被 Jenkins Pipeline 直接识别的单项目流水线：
+
+- 前端：`academy-front/Jenkinsfile`
+- Python：`academy-py/Jenkinsfile`
+
+在 Jenkins 中分别创建两个 Pipeline 任务，并将 Script Path 设置为对应路径。默认流水线执行依赖安装、校验和 Docker 构建；只有显式打开 `PUSH_IMAGE` 或 `DEPLOY` 参数时才会推送镜像或通过 SSH 部署。
 
 ## 领域边界
 

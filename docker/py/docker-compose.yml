@@ -1,0 +1,17 @@
+services:
+  academy-py:
+    build:
+      context: ../../academy-py
+      dockerfile: Dockerfile
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "8000:8000"
+    networks:
+      - academy-net
+    restart: unless-stopped
+
+networks:
+  academy-net:
+    external: true
+    name: zhaoyao-academy-net

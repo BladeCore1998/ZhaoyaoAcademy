@@ -1,0 +1,244 @@
+def buildImageName(String registry, String repository, String tag) {
+    def prefix = registry?.trim() ? "${registry.trim().replaceAll('/+$', '')}/" : ''
+    return "${prefix}${repository.trim()}:${tag}"
+}
+
+pipeline {
+    agent any
+
+    options {
+        skipDefaultCheckout(true)
+        timestamps()
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
+    parameters {
+        string(
+            name: 'IMAGE_REPOSITORY',
+            defaultValue: 'zhaoyao/academy-front',
+            description: 'Docker image repository, for example zhaoyao/academy-front'
+        )
+        string(
+            name: 'IMAGE_TAG',
+            defaultValue: '',
+            description: 'Optional image tag. Empty uses BUILD_NUMBER plus the commit short SHA.'
+        )
+        string(
+            name: 'REGISTRY_URL',
+            defaultValue: '',
+            description: 'Optional registry host, for example registry.example.com'
+        )
+        string(
+            name: 'REGISTRY_CREDENTIALS_ID',
+            defaultValue: 'docker-registry',
+            description: 'Jenkins username/password credential ID for the registry'
+        )
+        booleanParam(
+            name: 'PUSH_IMAGE',
+            defaultValue: false,
+            description: 'Push the built image to the configured registry'
+        )
+        booleanParam(
+            name: 'DEPLOY',
+            defaultValue: false,
+            description: 'Deploy the image to a remote Docker host over SSH'
+        )
+        string(
+            name: 'DEPLOY_HOST',
+            defaultValue: '',
+            description: 'Remote Docker host or IP'
+        )
+        string(
+            name: 'DEPLOY_USER',
+            defaultValue: 'deploy',
+            description: 'Remote SSH user'
+        )
+        string(
+            name: 'DEPLOY_SSH_CREDENTIALS_ID',
+            defaultValue: 'academy-deploy-ssh',
+            description: 'Jenkins SSH private key credential ID'
+        )
+        string(
+            name: 'DEPLOY_CONTAINER_NAME',
+            defaultValue: 'academy-front',
+            description: 'Remote Docker container name'
+        )
+        string(
+            name: 'DEPLOY_PORT_MAPPING',
+            defaultValue: '3000:3000',
+            description: 'Remote Docker port mapping'
+        )
+        string(
+            name: 'DEPLOY_ENV_FILE',
+            defaultValue: '/opt/zhaoyao-academy/academy-front.env',
+            description: 'Remote env file passed to docker run'
+        )
+    }
+
+    environment {
+        TZ = 'Asia/Shanghai'
+        DOCKER_BUILDKIT = '1'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Prepare image metadata') {
+            steps {
+                script {
+                    def commit = sh(
+                        script: 'git rev-parse --short HEAD',
+                        returnStdout: true
+                    ).trim()
+                    env.RELEASE_TAG = params.IMAGE_TAG?.trim()
+                        ? params.IMAGE_TAG.trim()
+                        : "${env.BUILD_NUMBER}-${commit}"
+                    env.IMAGE_NAME = buildImageName(
+                        params.REGISTRY_URL,
+                        params.IMAGE_REPOSITORY,
+                        env.RELEASE_TAG
+                    )
+                    echo "Building ${env.IMAGE_NAME}"
+                }
+            }
+        }
+
+        stage('Install and verify') {
+            steps {
+                withEnv([
+                    'DATABASE_URL=mysql://academy:academy@127.0.0.1:3306/academy',
+                    'REDIS_URL=redis://127.0.0.1:6379',
+                    'BETTER_AUTH_URL=http://localhost:3000',
+                    'MINIO_ENDPOINT=http://127.0.0.1:9000',
+                    'MINIO_ACCESS_KEY=academy',
+                    'MINIO_SECRET_KEY=academy-secret',
+                    'MINIO_BUCKET=academy-assets'
+                ]) {
+                    sh '''
+                        set -eu
+                        corepack enable
+                        corepack prepare pnpm@11.12.0 --activate
+                        pnpm config set registry https://registry.npmmirror.com
+                        pnpm install --frozen-lockfile
+                        pnpm typecheck
+                        pnpm build
+                    '''
+                }
+            }
+        }
+
+        stage('Build Docker image') {
+            steps {
+                withEnv(["IMAGE_NAME=${env.IMAGE_NAME}"]) {
+                    sh '''
+                        set -eu
+                        docker build --pull -t "$IMAGE_NAME" .
+                    '''
+                }
+            }
+        }
+
+        stage('Push Docker image') {
+            when {
+                expression { params.PUSH_IMAGE }
+            }
+            steps {
+                script {
+                    if (params.REGISTRY_URL?.trim()) {
+                        withCredentials([
+                            usernamePassword(
+                                credentialsId: params.REGISTRY_CREDENTIALS_ID.trim(),
+                                usernameVariable: 'REGISTRY_USER',
+                                passwordVariable: 'REGISTRY_PASSWORD'
+                            )
+                        ]) {
+                            withEnv(["REGISTRY_URL=${params.REGISTRY_URL.trim()}"]) {
+                                sh '''
+                                    set -eu
+                                    set +x
+                                    printf '%s' "$REGISTRY_PASSWORD" | docker login "$REGISTRY_URL" \
+                                        --username "$REGISTRY_USER" \
+                                        --password-stdin
+                                '''
+                            }
+                        }
+                    } else {
+                        echo 'REGISTRY_URL is empty; using the Docker client login state already present on the agent.'
+                    }
+                }
+                withEnv(["IMAGE_NAME=${env.IMAGE_NAME}"]) {
+                    sh '''
+                        set -eu
+                        docker push "$IMAGE_NAME"
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                expression { params.DEPLOY }
+            }
+            steps {
+                script {
+                    if (!params.PUSH_IMAGE) {
+                        error('DEPLOY=true requires PUSH_IMAGE=true so the remote host can pull the release image.')
+                    }
+                    if (!params.DEPLOY_HOST?.trim()) {
+                        error('DEPLOY_HOST is required when DEPLOY=true.')
+                    }
+                    if (!params.DEPLOY_USER?.trim()) {
+                        error('DEPLOY_USER is required when DEPLOY=true.')
+                    }
+                    if (!params.DEPLOY_ENV_FILE?.trim()) {
+                        error('DEPLOY_ENV_FILE is required when DEPLOY=true.')
+                    }
+
+                    withCredentials([
+                        sshUserPrivateKey(
+                            credentialsId: params.DEPLOY_SSH_CREDENTIALS_ID.trim(),
+                            keyFileVariable: 'SSH_KEY'
+                        )
+                    ]) {
+                        withEnv([
+                            "IMAGE_NAME=${env.IMAGE_NAME}",
+                            "DEPLOY_HOST=${params.DEPLOY_HOST.trim()}",
+                            "DEPLOY_USER=${params.DEPLOY_USER.trim()}",
+                            "CONTAINER_NAME=${params.DEPLOY_CONTAINER_NAME.trim()}",
+                            "PORT_MAPPING=${params.DEPLOY_PORT_MAPPING.trim()}",
+                            "ENV_FILE=${params.DEPLOY_ENV_FILE.trim()}"
+                        ]) {
+                            sh '''
+                                set -eu
+                                ssh -i "$SSH_KEY" \
+                                    -o BatchMode=yes \
+                                    -o StrictHostKeyChecking=no \
+                                    "$DEPLOY_USER@$DEPLOY_HOST" \
+                                    "docker pull '$IMAGE_NAME' && \
+                                     (docker rm -f '$CONTAINER_NAME' >/dev/null 2>&1 || true) && \
+                                     docker run -d --restart unless-stopped \
+                                       --name '$CONTAINER_NAME' \
+                                       --publish '$PORT_MAPPING' \
+                                       --env-file '$ENV_FILE' \
+                                       --env TZ=Asia/Shanghai \
+                                       '$IMAGE_NAME'"
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            deleteDir()
+        }
+    }
+}
