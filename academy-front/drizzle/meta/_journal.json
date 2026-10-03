@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1791012531129,
+      "tag": "0000_gray_harry_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791017278419,
+      "tag": "0001_add_chinese_comments",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791022000000,
+      "tag": "0002_seed_shuyuan_content",
+      "breakpoints": true
+    }
+  ]
+}

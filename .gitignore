@@ -1,0 +1,14 @@
+node_modules/
+.next/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.mypy_cache/
+.ruff_cache/
+.env
+.env.*
+!.env.example
+dist/
+.playwright-mcp/
+/academy-front/tsconfig.tsbuildinfo

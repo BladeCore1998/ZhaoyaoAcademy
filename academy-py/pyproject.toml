@@ -1,0 +1,19 @@
+[project]
+name = "academy-py"
+version = "0.1.0"
+description = "招摇书院中间件与算法转换服务骨架"
+authors = [{ name = "Zhaoyao Academy Team" }]
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi==0.142.2",
+    "uvicorn[standard]==0.38.0",
+    "pydantic-settings==2.11.0",
+]
+
+[tool.poetry]
+packages = [{ include = "app" }]
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"

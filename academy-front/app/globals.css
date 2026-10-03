@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #20252c;
+  --muted: #6d736f;
+  --paper: #f3eee3;
+  --paper-deep: #e7ddcc;
+  --red: #a43e35;
+  --gold: #b48649;
+  --line: rgba(53, 57, 50, 0.16);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-red: var(--red);
+  --color-gold: var(--gold);
+  --color-line: var(--line);
+  --font-serif: "Noto Serif SC", "Songti SC", serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--paper);
+  }
+
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-serif);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply mb-3.5 text-xs tracking-[0.18em] text-red;
+  }
+
+  .page-intro,
+  .hero-lede {
+    @apply max-w-[510px] leading-[1.9] text-muted;
+  }
+
+  .button-primary,
+  .button-quiet {
+    @apply inline-flex min-h-[42px] items-center justify-center gap-2 border px-[18px] transition-colors;
+  }
+
+  .button-primary {
+    @apply border-red bg-red text-[#fffaf0] hover:bg-red/90;
+  }
+
+  .button-primary:disabled {
+    @apply cursor-wait opacity-60;
+  }
+
+  .button-quiet {
+    @apply border-red text-red hover:bg-red/8;
+  }
+
+  .moon {
+    position: absolute;
+    top: 50px;
+    right: 22%;
+    width: 150px;
+    height: 150px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    box-shadow: 18px 8px 0 -5px var(--paper);
+  }
+
+  .figure-seal {
+    display: grid;
+    width: 132px;
+    height: 178px;
+    place-items: center;
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-size: 74px;
+    writing-mode: vertical-rl;
+  }
+
+  .form-error {
+    @apply text-[13px] text-red;
+  }
+}
+
+.admin-layout {
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}

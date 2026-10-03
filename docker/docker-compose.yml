@@ -1,0 +1,119 @@
+services:
+  academy-migrate:
+    build:
+      context: ../academy-front
+      dockerfile: Dockerfile
+      target: migrator
+    env_file:
+      - path: ../academy-front/.env.example
+        required: true
+      - path: ../academy-front/.env
+        required: false
+    environment:
+      DATABASE_URL: mysql://academy:academy@mysql:3306/academy
+      TZ: Asia/Shanghai
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  academy-front:
+    build:
+      context: ../academy-front
+      dockerfile: Dockerfile
+    env_file:
+      - path: ../academy-front/.env.example
+        required: true
+      - path: ../academy-front/.env
+        required: false
+    environment:
+      DATABASE_URL: mysql://academy:academy@mysql:3306/academy
+      REDIS_URL: redis://redis:6379
+      BETTER_AUTH_URL: http://localhost:3000
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: academy
+      MINIO_SECRET_KEY: academy-secret
+      MINIO_BUCKET: academy-assets
+      TZ: Asia/Shanghai
+    ports:
+      - "3000:3000"
+    depends_on:
+      academy-migrate:
+        condition: service_completed_successfully
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  academy-py:
+    build:
+      context: ../academy-py
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      TZ: Asia/Shanghai
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  mysql:
+    image: mysql:8.4.6
+    environment:
+      MYSQL_DATABASE: academy
+      MYSQL_USER: academy
+      MYSQL_PASSWORD: academy
+      MYSQL_ROOT_PASSWORD: root-academy
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uacademy", "-pacademy"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7.4.1-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: academy
+      MINIO_ROOT_PASSWORD: academy-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+volumes:
+  mysql-data:
+  redis-data:
+  minio-data:
