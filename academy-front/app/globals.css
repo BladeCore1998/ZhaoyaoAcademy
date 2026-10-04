@@ -101,6 +101,368 @@
   }
 }
 
+.user-layout {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: var(--paper);
+  background-image: linear-gradient(rgba(243, 238, 227, 0.9), rgba(243, 238, 227, 0.94));
+  color: var(--ink);
+  transition:
+    background-color 240ms ease,
+    color 240ms ease;
+}
+
+.user-layout::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  content: "";
+  opacity: 0.08;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.user-layout[data-season="spring"] {
+  --ink: #26362d;
+  --muted: #6d7f73;
+  --paper: #eef2ed;
+  --paper-deep: #dce9df;
+  --red: #527665;
+  --gold: #a27b45;
+  --line: rgba(55, 82, 66, 0.17);
+  background-image: linear-gradient(rgba(238, 242, 237, 0.9), rgba(238, 242, 237, 0.95));
+}
+
+.user-layout[data-season="spring"]::before {
+  background-image: url("/inspiration/Chun.webp");
+}
+
+.user-layout[data-season="summer"] {
+  --ink: #203537;
+  --muted: #65807f;
+  --paper: #edf3f2;
+  --paper-deep: #d9e9e7;
+  --red: #317e7d;
+  --gold: #a87945;
+  --line: rgba(44, 91, 90, 0.17);
+  background-image: linear-gradient(rgba(237, 243, 242, 0.9), rgba(237, 243, 242, 0.95));
+}
+
+.user-layout[data-season="summer"]::before {
+  background-image: url("/inspiration/Xia.webp");
+}
+
+.user-layout[data-season="autumn"]::before {
+  background-image: url("/inspiration/Qiu.webp");
+}
+
+.user-layout[data-season="winter"] {
+  --ink: #273342;
+  --muted: #6c7786;
+  --paper: #eef1f5;
+  --paper-deep: #dfe6ef;
+  --red: #526783;
+  --gold: #a17d4d;
+  --line: rgba(60, 76, 99, 0.17);
+  background-image: linear-gradient(rgba(238, 241, 245, 0.9), rgba(238, 241, 245, 0.95));
+}
+
+.user-layout[data-season="winter"]::before {
+  background-image: url("/inspiration/Dong.webp");
+}
+
+.user-header,
+.user-page,
+.user-footer {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+.user-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px 32px;
+  padding: 22px 24px;
+}
+
+.user-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-inline-end: auto;
+}
+
+.user-brand-seal {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--red);
+  border-radius: 50%;
+  color: var(--red);
+}
+
+.user-brand-seal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-nav,
+.user-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.user-nav-link,
+.user-account-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  transition: color 160ms ease;
+}
+
+.user-nav-link:hover,
+.user-account-link:hover {
+  color: var(--red);
+}
+
+.user-account-link {
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--red);
+  color: var(--red);
+}
+
+.user-season-picker {
+  position: relative;
+}
+
+.user-season-picker summary {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  color: var(--red);
+  cursor: pointer;
+  font-size: 12px;
+  list-style: none;
+}
+
+.user-season-picker summary::-webkit-details-marker {
+  display: none;
+}
+
+.user-season-picker summary:hover {
+  background: color-mix(in srgb, var(--red) 7%, transparent);
+}
+
+.user-season-menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  width: 188px;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 96%, white);
+  box-shadow: 0 12px 28px rgba(34, 43, 38, 0.12);
+}
+
+.user-season-menu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 9px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  text-align: left;
+}
+
+.user-season-menu button:hover,
+.user-season-menu button.is-active {
+  background: color-mix(in srgb, var(--red) 9%, transparent);
+  color: var(--red);
+}
+
+.user-hero {
+  position: relative;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--paper) 94%, transparent) 0%,
+      color-mix(in srgb, var(--paper) 74%, transparent) 58%,
+      transparent 100%
+    ),
+    url("/inspiration/Qiu.webp") center / cover;
+}
+
+.user-layout[data-season="spring"] .user-hero {
+  background-image:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--paper) 94%, transparent) 0%,
+      color-mix(in srgb, var(--paper) 74%, transparent) 58%,
+      transparent 100%
+    ),
+    url("/inspiration/Chun.webp");
+}
+
+.user-layout[data-season="summer"] .user-hero {
+  background-image:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--paper) 94%, transparent) 0%,
+      color-mix(in srgb, var(--paper) 74%, transparent) 58%,
+      transparent 100%
+    ),
+    url("/inspiration/Xia.webp");
+}
+
+.user-layout[data-season="winter"] .user-hero {
+  background-image:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--paper) 94%, transparent) 0%,
+      color-mix(in srgb, var(--paper) 74%, transparent) 58%,
+      transparent 100%
+    ),
+    url("/inspiration/Dong.webp");
+}
+
+.user-hero-content {
+  width: min(1180px, 100%);
+  margin-inline: auto;
+  padding: 82px 24px 92px;
+}
+
+.user-hero h1 {
+  max-width: 650px;
+  margin: 0;
+  font-size: clamp(44px, 7vw, 82px);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.18;
+}
+
+.user-hero .hero-lede {
+  margin-top: 24px;
+}
+
+.user-hero-note {
+  margin-top: 26px;
+  color: var(--red);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+}
+
+.user-featured-song,
+.user-featured-book {
+  border: 1px solid var(--line);
+}
+
+.user-featured-song {
+  background: color-mix(in srgb, var(--paper) 74%, transparent);
+}
+
+.user-featured-book {
+  background: var(--red);
+  color: var(--paper);
+}
+
+.user-featured-book .eyebrow {
+  color: color-mix(in srgb, var(--paper) 72%, transparent);
+}
+
+.user-feature-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--paper) 72%, transparent);
+  padding-bottom: 4px;
+  color: var(--paper);
+}
+
+.user-footer {
+  padding: 0 24px 28px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 991px) {
+  .user-header {
+    gap: 16px 20px;
+  }
+
+  .user-nav {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 575px) {
+  .user-header {
+    padding: 18px 16px;
+  }
+
+  .user-season-picker summary span {
+    display: none;
+  }
+
+  .user-season-picker summary {
+    width: 32px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .user-hero {
+    min-height: 460px;
+    background-position: 64% center;
+  }
+
+  .user-hero-content {
+    padding: 64px 16px 72px;
+  }
+
+  .user-hero h1 {
+    font-size: clamp(42px, 13vw, 62px);
+  }
+
+  .user-hero-note {
+    max-width: 260px;
+    line-height: 1.8;
+  }
+
+  .user-footer {
+    padding-inline: 16px;
+  }
+}
+
 .admin-layout {
   --admin-primary: #a43e35;
   --admin-primary-soft: #f7ecea;
@@ -115,10 +477,11 @@
   --admin-primary: #527665;
   --admin-primary-soft: #eaf2eb;
   --admin-sider: #203c34;
+  background: #eef2ed;
 }
 
 .admin-layout[data-season="spring"] .admin-main-layout {
-  background: #eef2ed;
+  background-image: linear-gradient(rgba(238, 242, 237, 0.82), rgba(238, 242, 237, 0.9)), url("/inspiration/Chun.webp");
 }
 
 .admin-layout[data-season="summer"] {
@@ -129,7 +492,7 @@
 }
 
 .admin-layout[data-season="summer"] .admin-main-layout {
-  background: #edf3f2;
+  background-image: linear-gradient(rgba(237, 243, 242, 0.82), rgba(237, 243, 242, 0.9)), url("/inspiration/Xia.webp");
 }
 
 .admin-layout[data-season="autumn"] {
@@ -140,7 +503,7 @@
 }
 
 .admin-layout[data-season="autumn"] .admin-main-layout {
-  background: #f3f0e9;
+  background-image: linear-gradient(rgba(243, 240, 233, 0.82), rgba(243, 240, 233, 0.9)), url("/inspiration/Qiu.webp");
 }
 
 .admin-layout[data-season="winter"] {
@@ -151,7 +514,7 @@
 }
 
 .admin-layout[data-season="winter"] .admin-main-layout {
-  background: #eef1f5;
+  background-image: linear-gradient(rgba(238, 241, 245, 0.82), rgba(238, 241, 245, 0.9)), url("/inspiration/Dong.webp");
 }
 
 .admin-desktop-sider {
@@ -204,7 +567,7 @@
   position: absolute;
   z-index: -1;
   inset: 0;
-  background: linear-gradient(0deg, rgba(25, 54, 44, 0.96), rgba(25, 54, 44, 0.06) 100%);
+  background: linear-gradient(0deg, rgba(24, 28, 30, 0.9), rgba(24, 28, 30, 0.08) 100%);
   content: "";
 }
 
@@ -213,12 +576,15 @@
   width: 34px;
   height: 34px;
   flex: 0 0 auto;
+  overflow: hidden;
   place-items: center;
   border: 1px solid rgba(255, 244, 218, 0.8);
-  color: #fff3d6;
-  font-family: "Noto Serif SC", "Songti SC", serif;
-  font-size: 20px;
-  line-height: 1;
+}
+
+.admin-brand-seal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .admin-brand-copy {
@@ -288,7 +654,8 @@
 
 .admin-main-layout {
   min-width: 0;
-  background: #eef2ed;
+  background-position: center;
+  background-size: cover;
 }
 
 .admin-header {
@@ -342,8 +709,9 @@
   gap: 7px;
   margin-inline-end: 0;
   padding: 5px 9px;
-  background: #edf5ed;
-  color: #4d7959;
+  border: 1px solid #d5e5d6;
+  background: #f5faf5 !important;
+  color: #4d7959 !important;
   font-size: 11px;
 }
 
@@ -351,6 +719,21 @@
   width: 6px;
   height: 6px;
   box-shadow: none;
+}
+
+.admin-sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #d5e5d6 !important;
+  background: #f5faf5 !important;
+  color: #4d7959 !important;
+  font-size: 12px;
+}
+
+.admin-sync-status .anticon,
+.admin-sync-status svg {
+  color: #6a9a72;
 }
 
 .admin-season-button {

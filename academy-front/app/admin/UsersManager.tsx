@@ -122,7 +122,7 @@ export default function UsersManager() {
         <div>
           <p className="admin-workspace-kicker">书院名录 · DISCIPLES</p>
           <h1 className="admin-page-title">弟子名录</h1>
-          <p className="admin-page-subtitle">查找账号、核对身份，协助学员维护登录凭据。</p>
+          <p className="admin-page-subtitle">查找账号、核对身份，协助太招摇维护登录凭据。</p>
         </div>
         <span className="admin-workspace-count">
           <Users size={16} />共 {rows.length} 位

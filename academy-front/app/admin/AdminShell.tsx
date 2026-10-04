@@ -20,11 +20,9 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { getCurrentSeason, type Season, type SeasonPreference } from "@/lib/season";
 
 const { Sider, Header, Content } = Layout;
-
-type Season = "spring" | "summer" | "autumn" | "winter";
-type SeasonPreference = "auto" | Season;
 
 const seasonOptions: Record<Season, { label: string; shortLabel: string; primary: string; icon: React.ReactNode }> = {
   spring: { label: "春 · 桃花书院", shortLabel: "春日", primary: "#527665", icon: <Flower2 size={16} /> },
@@ -32,16 +30,6 @@ const seasonOptions: Record<Season, { label: string; shortLabel: string; primary
   autumn: { label: "秋 · 金桂书院", shortLabel: "秋日", primary: "#a43e35", icon: <Leaf size={16} /> },
   winter: { label: "冬 · 瑞雪书院", shortLabel: "冬日", primary: "#526783", icon: <Snowflake size={16} /> },
 };
-
-function getCurrentSeason(): Season {
-  const month = Number(
-    new Intl.DateTimeFormat("en-US", { month: "numeric", timeZone: "Asia/Shanghai" }).format(new Date()),
-  );
-  if (month >= 3 && month <= 5) return "spring";
-  if (month >= 6 && month <= 8) return "summer";
-  if (month >= 9 && month <= 11) return "autumn";
-  return "winter";
-}
 
 const baseAdminTheme = {
   token: {
@@ -206,7 +194,9 @@ export default function AdminShell({ children }: Readonly<{ children: React.Reac
         <Sider className="admin-desktop-sider" breakpoint="lg" collapsedWidth="0" trigger={null}>
           <Link className="admin-brand" href="/admin">
             <span className="admin-brand-art" aria-hidden />
-            <span className="admin-brand-seal">招</span>
+            <span className="admin-brand-seal">
+              <img src="/inspiration/TouXiang.webp" alt="" />
+            </span>
             <span className="admin-brand-copy">
               <strong>招摇书院</strong>
               <small>SHU YUAN · 管理处</small>
@@ -286,7 +276,9 @@ export default function AdminShell({ children }: Readonly<{ children: React.Reac
           className={`admin-mobile-drawer admin-mobile-drawer-${activeSeason}`}
           title={
             <Link className="admin-drawer-brand" href="/admin">
-              <span className="admin-brand-seal">招</span>
+              <span className="admin-brand-seal">
+                <img src="/inspiration/TouXiang.webp" alt="" />
+              </span>
               <span>招摇书院</span>
             </Link>
           }

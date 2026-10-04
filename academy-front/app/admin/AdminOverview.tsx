@@ -175,7 +175,7 @@ export default function AdminOverview() {
             <Typography.Text type="secondary">内容发布与互动状态</Typography.Text>
           </div>
           {data ? (
-            <Tag icon={<CheckCircle2 size={13} />} color="success">
+            <Tag className="admin-sync-status" icon={<CheckCircle2 size={13} />} color="success">
               数据已同步
             </Tag>
           ) : null}
