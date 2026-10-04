@@ -26,7 +26,5 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
   await db.update(marshmallow).set(update).where(eq(marshmallow.id, id));
   const [updated] = await db.select().from(marshmallow).where(eq(marshmallow.id, id));
-  return updated
-    ? NextResponse.json(updated)
-    : NextResponse.json({ error: "留言不存在" }, { status: 404 });
+  return updated ? NextResponse.json(updated) : NextResponse.json({ error: "留言不存在" }, { status: 404 });
 }

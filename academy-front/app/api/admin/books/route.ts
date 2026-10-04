@@ -1,17 +1,28 @@
 import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { booklist } from "@/db/schema";
+import { booklist, bookStatuses } from "@/db/schema";
 import { requireAdmin } from "@/lib/admin";
 
 function readContentInput(body: unknown) {
   const value = body as Record<string, unknown>;
-  const title = typeof value.title === "string" ? value.title.trim() : "";
+  const bookName = typeof value.bookName === "string" ? value.bookName.trim() : "";
+  const author = typeof value.author === "string" ? value.author.trim() : "";
+  const category = typeof value.category === "string" ? value.category.trim() : "";
+  const country = typeof value.country === "string" ? value.country.trim() : "";
+  const statusValue = typeof value.status === "string" ? value.status.trim() : "";
+  const status = bookStatuses.includes(statusValue as (typeof bookStatuses)[number])
+    ? (statusValue as (typeof bookStatuses)[number])
+    : "未读";
   const summary = typeof value.summary === "string" ? value.summary.trim() : "";
   const coverUrl = typeof value.coverUrl === "string" ? value.coverUrl.trim() : "";
 
   return {
-    title,
+    bookName,
+    author,
+    category,
+    country,
+    status,
     summary: summary || null,
     coverUrl: coverUrl || null,
     isPublished: value.isPublished === true,
@@ -31,8 +42,8 @@ export async function POST(request: Request) {
   if (auth.response) return auth.response;
 
   const input = readContentInput(await request.json());
-  if (!input.title) {
-    return NextResponse.json({ error: "标题不能为空" }, { status: 400 });
+  if (!input.bookName || !input.author || !input.category || !input.country) {
+    return NextResponse.json({ error: "书名、作者、类型和国家不能为空" }, { status: 400 });
   }
 
   const [{ id }] = await db.insert(booklist).values(input).$returningId();

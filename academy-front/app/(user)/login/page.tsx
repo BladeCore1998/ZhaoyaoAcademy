@@ -42,9 +42,7 @@ export default function LoginPage() {
     }
 
     const sessionResponse = await fetch("/api/auth/get-session", { cache: "no-store" });
-    const session = sessionResponse.ok
-      ? ((await sessionResponse.json()) as { user?: { role?: string } })
-      : null;
+    const session = sessionResponse.ok ? ((await sessionResponse.json()) as { user?: { role?: string } }) : null;
     const next = new URLSearchParams(window.location.search).get("next");
     const destination = next?.startsWith("/") && !next.startsWith("//") ? next : "/";
     window.location.href = session?.user?.role === "admin" ? "/admin" : destination;
@@ -91,11 +89,27 @@ export default function LoginPage() {
         <form className="my-7 grid gap-4" onSubmit={handleSubmit}>
           <label className="grid gap-1.5 text-sm">
             邮箱
-            <input className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red" name="email" type="email" required placeholder="you@example.com" value={email} onChange={(event) => setEmail(event.target.value)} />
+            <input
+              className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red"
+              name="email"
+              type="email"
+              required
+              placeholder="you@example.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
           </label>
           <label className="grid gap-1.5 text-sm">
             密码
-            <input className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red" name="password" type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} />
+            <input
+              className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red"
+              name="password"
+              type="password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
           </label>
           {error ? <p className="form-error">{error}</p> : null}
           <button className="button-primary" disabled={pending} type="submit">
@@ -106,27 +120,56 @@ export default function LoginPage() {
       </div>
       {captchaOpen ? (
         <div className="fixed inset-0 z-10 grid place-items-center bg-ink/35 p-6">
-          <div className="relative w-[min(100%,380px)] border border-line bg-paper p-7 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="captcha-title">
-            <button className="absolute right-4 top-4 text-muted transition-colors hover:text-red" type="button" aria-label="关闭验证码" title="关闭" onClick={() => setCaptchaOpen(false)}>
+          <div
+            className="relative w-[min(100%,380px)] border border-line bg-paper p-7 shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="captcha-title"
+          >
+            <button
+              className="absolute right-4 top-4 text-muted transition-colors hover:text-red"
+              type="button"
+              aria-label="关闭验证码"
+              title="关闭"
+              onClick={() => setCaptchaOpen(false)}
+            >
               <X size={18} />
             </button>
             <p className="eyebrow">安全校验</p>
-            <h2 id="captcha-title" className="text-2xl">请输入验证码</h2>
+            <h2 id="captcha-title" className="text-2xl">
+              请输入验证码
+            </h2>
             <p className="mt-2 text-sm leading-7 text-muted">登录失败后需要完成一次校验，验证通过会自动重试登录。</p>
             <form className="mt-5 grid gap-4" onSubmit={handleCaptchaSubmit}>
               <div className="flex items-stretch gap-3">
-                <div className="grid min-h-[48px] flex-1 place-items-center border border-line bg-paper-deep text-xl tracking-[0.35em] text-red" aria-label={`验证码 ${captcha}`}>
+                <div
+                  className="grid min-h-[48px] flex-1 place-items-center border border-line bg-paper-deep text-xl tracking-[0.35em] text-red"
+                  aria-label={`验证码 ${captcha}`}
+                >
                   {captcha}
                 </div>
-                <button className="border border-line px-3 text-muted transition-colors hover:border-red hover:text-red" type="button" aria-label="换一张验证码" title="换一张" onClick={() => {
-                  setCaptcha(createCaptcha());
-                  setCaptchaInput("");
-                  setCaptchaError("");
-                }}>
+                <button
+                  className="border border-line px-3 text-muted transition-colors hover:border-red hover:text-red"
+                  type="button"
+                  aria-label="换一张验证码"
+                  title="换一张"
+                  onClick={() => {
+                    setCaptcha(createCaptcha());
+                    setCaptchaInput("");
+                    setCaptchaError("");
+                  }}
+                >
                   <RefreshCw size={17} />
                 </button>
               </div>
-              <input className="min-h-[42px] w-full border border-line bg-transparent px-3 uppercase outline-none transition focus:border-red" autoFocus value={captchaInput} onChange={(event) => setCaptchaInput(event.target.value)} placeholder="输入上方验证码" required />
+              <input
+                className="min-h-[42px] w-full border border-line bg-transparent px-3 uppercase outline-none transition focus:border-red"
+                autoFocus
+                value={captchaInput}
+                onChange={(event) => setCaptchaInput(event.target.value)}
+                placeholder="输入上方验证码"
+                required
+              />
               {captchaError ? <p className="form-error">{captchaError}</p> : null}
               <button className="button-primary" disabled={pending} type="submit">
                 {pending ? "正在校验…" : "验证并重试"}

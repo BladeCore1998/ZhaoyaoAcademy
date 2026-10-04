@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "82d10ae5-bd32-4a35-aa34-fa23d3d85052",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "ce2231e2-8f1e-4d1b-a1f7-eff66e404598",
+  "prevId": "b70028b9-9204-455d-9c03-a8cdf28c79a5",
   "tables": {
     "account": {
       "name": "account",
@@ -120,12 +120,41 @@
           "notNull": true,
           "autoincrement": true
         },
-        "title": {
-          "name": "title",
+        "book_name": {
+          "name": "book_name",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "author": {
+          "name": "author",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "category": {
+          "name": "category",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "country": {
+          "name": "country",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('未读','在读','已读')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'未读'"
         },
         "summary": {
           "name": "summary",
@@ -246,9 +275,30 @@
           "notNull": true,
           "autoincrement": true
         },
-        "title": {
-          "name": "title",
+        "song_name": {
+          "name": "song_name",
           "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "artist": {
+          "name": "artist",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "language": {
+          "name": "language",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "style": {
+          "name": "style",
+          "type": "enum('流行','古风','抒情','民谣','中国风','其他')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

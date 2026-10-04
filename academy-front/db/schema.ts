@@ -1,13 +1,7 @@
-import {
-  boolean,
-  datetime,
-  index,
-  int,
-  mysqlTable,
-  text,
-  timestamp,
-  varchar,
-} from "drizzle-orm/mysql-core";
+import { boolean, datetime, index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+
+export const songStyles = ["流行", "古风", "抒情", "民谣", "中国风", "其他"] as const;
+export const bookStatuses = ["未读", "在读", "已读"] as const;
 
 export const user = mysqlTable("user", {
   id: varchar("id", { length: 36 }).primaryKey(),
@@ -62,7 +56,10 @@ export const verification = mysqlTable("verification", {
 
 export const playlist = mysqlTable("playlist", {
   id: int("id").autoincrement().primaryKey(),
-  title: varchar("title", { length: 255 }).notNull(),
+  songName: varchar("song_name", { length: 255 }).notNull(),
+  artist: varchar("artist", { length: 255 }).notNull(),
+  language: varchar("language", { length: 64 }).notNull(),
+  style: mysqlEnum("style", songStyles).notNull(),
   summary: text("summary"),
   coverUrl: text("cover_url"),
   isPublished: boolean("is_published").notNull().default(false),
@@ -71,7 +68,11 @@ export const playlist = mysqlTable("playlist", {
 
 export const booklist = mysqlTable("booklist", {
   id: int("id").autoincrement().primaryKey(),
-  title: varchar("title", { length: 255 }).notNull(),
+  bookName: varchar("book_name", { length: 255 }).notNull(),
+  author: varchar("author", { length: 255 }).notNull(),
+  category: varchar("category", { length: 128 }).notNull(),
+  country: varchar("country", { length: 128 }).notNull(),
+  status: mysqlEnum("status", bookStatuses).notNull().default("未读"),
   summary: text("summary"),
   coverUrl: text("cover_url"),
   isPublished: boolean("is_published").notNull().default(false),
@@ -87,4 +88,3 @@ export const marshmallow = mysqlTable("marshmallow", {
   isPublic: boolean("is_public").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-

@@ -68,7 +68,12 @@ export default function ProfilePanel() {
     }
   }
 
-  if (loading) return <Card><Skeleton active /></Card>;
+  if (loading)
+    return (
+      <Card>
+        <Skeleton active />
+      </Card>
+    );
   if (error) return <Alert type="error" showIcon message={error} />;
   if (!session?.user) {
     return <Alert type="info" showIcon message="请先登录后管理个人资料" />;
@@ -96,7 +101,9 @@ export default function ProfilePanel() {
               return false;
             }}
           >
-            <Button loading={uploading} icon={<ImagePlus size={16} />}>上传头像</Button>
+            <Button loading={uploading} icon={<ImagePlus size={16} />}>
+              上传头像
+            </Button>
           </Upload>
         </div>
       </div>

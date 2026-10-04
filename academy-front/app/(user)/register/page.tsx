@@ -25,7 +25,10 @@ export default function RegisterPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
     });
-    const payload = (await response.json().catch(() => null)) as { message?: string; error?: { message?: string } } | null;
+    const payload = (await response.json().catch(() => null)) as {
+      message?: string;
+      error?: { message?: string };
+    } | null;
     setPending(false);
 
     if (!response.ok) {
@@ -48,19 +51,51 @@ export default function RegisterPage() {
         <form className="my-7 grid gap-4" onSubmit={handleSubmit}>
           <label className="grid gap-1.5 text-sm">
             昵称
-            <input className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red" name="name" type="text" required maxLength={255} value={name} onChange={(event) => setName(event.target.value)} />
+            <input
+              className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red"
+              name="name"
+              type="text"
+              required
+              maxLength={255}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
           </label>
           <label className="grid gap-1.5 text-sm">
             邮箱
-            <input className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red" name="email" type="email" required placeholder="you@example.com" value={email} onChange={(event) => setEmail(event.target.value)} />
+            <input
+              className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red"
+              name="email"
+              type="email"
+              required
+              placeholder="you@example.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
           </label>
           <label className="grid gap-1.5 text-sm">
             密码
-            <input className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red" name="password" type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} />
+            <input
+              className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red"
+              name="password"
+              type="password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
           </label>
           <label className="grid gap-1.5 text-sm">
             确认密码
-            <input className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red" name="confirmPassword" type="password" required minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
+            <input
+              className="min-h-[42px] w-full border border-line bg-transparent px-3 outline-none transition focus:border-red"
+              name="confirmPassword"
+              type="password"
+              required
+              minLength={8}
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+            />
           </label>
           {error ? <p className="form-error">{error}</p> : null}
           <button className="button-primary" disabled={pending} type="submit">

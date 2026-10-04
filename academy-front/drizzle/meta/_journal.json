@@ -22,6 +22,20 @@
       "when": 1791022000000,
       "tag": "0002_seed_shuyuan_content",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1791106353709,
+      "tag": "0003_flat_gargoyle",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1791111178328,
+      "tag": "0004_keen_nico_minoru",
+      "breakpoints": true
     }
   ]
 }

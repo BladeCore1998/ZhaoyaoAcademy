@@ -11,4 +11,3 @@ export async function getCurrentRole() {
   const session = await getSession();
   return session?.user?.role ?? "guest";
 }
-

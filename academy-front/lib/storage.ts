@@ -11,15 +11,7 @@ const client = new Client({
   secretKey: process.env.MINIO_SECRET_KEY ?? "academy-secret",
 });
 
-export async function putImage({
-  key,
-  buffer,
-  contentType,
-}: {
-  key: string;
-  buffer: Buffer;
-  contentType: string;
-}) {
+export async function putImage({ key, buffer, contentType }: { key: string; buffer: Buffer; contentType: string }) {
   if (!(await client.bucketExists(bucket))) {
     await client.makeBucket(bucket);
   }
@@ -33,9 +25,6 @@ export async function putImage({
 }
 
 export async function getImage(key: string) {
-  const [object, stats] = await Promise.all([
-    client.getObject(bucket, key),
-    client.statObject(bucket, key),
-  ]);
+  const [object, stats] = await Promise.all([client.getObject(bucket, key), client.statObject(bucket, key)]);
   return { object, contentType: stats.metaData["content-type"] ?? "application/octet-stream" };
 }

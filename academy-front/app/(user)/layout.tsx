@@ -8,9 +8,7 @@ const links = [
   { href: "/mailbox", label: "棉花糖", icon: Mail },
 ];
 
-export default async function UserLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default async function UserLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const session = await getSession().catch(() => null);
 
   return (
@@ -25,15 +23,25 @@ export default async function UserLayout({
             <small className="mt-0.5 block text-[11px] tracking-[0.12em] text-muted">点歌 · 读书 · 收信</small>
           </span>
         </Link>
-        <nav className="order-3 flex w-full justify-between gap-5 md:order-none md:w-auto md:justify-normal" aria-label="用户导航">
+        <nav
+          className="order-3 flex w-full justify-between gap-5 md:order-none md:w-auto md:justify-normal"
+          aria-label="用户导航"
+        >
           {links.map(({ href, label, icon: Icon }) => (
-            <Link className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-red" href={href} key={href}>
+            <Link
+              className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-red"
+              href={href}
+              key={href}
+            >
               <Icon size={16} />
               {label}
             </Link>
           ))}
         </nav>
-        <Link className="inline-flex items-center gap-1.5 border-b border-red pb-[3px] text-sm text-red" href={session ? "/profile" : "/login"}>
+        <Link
+          className="inline-flex items-center gap-1.5 border-b border-red pb-[3px] text-sm text-red"
+          href={session ? "/profile" : "/login"}
+        >
           {session ? "我的" : "登录"}
         </Link>
       </header>

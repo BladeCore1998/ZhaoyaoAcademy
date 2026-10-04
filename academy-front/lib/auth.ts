@@ -10,9 +10,7 @@ export const auth = betterAuth({
     schema,
   }),
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
-  secret:
-    process.env.BETTER_AUTH_SECRET ??
-    "development-only-secret-change-before-production",
+  secret: process.env.BETTER_AUTH_SECRET ?? "development-only-secret-change-before-production",
   secondaryStorage: redisSecondaryStorage,
   session: {
     // Redis is the online session source of truth. MySQL keeps a
@@ -26,6 +24,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    revokeSessionsOnPasswordReset: true,
   },
   user: {
     additionalFields: {
