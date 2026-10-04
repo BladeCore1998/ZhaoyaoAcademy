@@ -1,7 +1,7 @@
 "use client";
 
-import { Music2, Play, Search, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Dice5, Music2, Play, Search, Shuffle, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { matchesSearch, normalizeSearchText } from "@/lib/content-search";
 import Pagination from "@/components/Pagination";
 
@@ -47,6 +47,8 @@ export default function PlaylistSearch({ items }: PlaylistSearchProps) {
   const [language, setLanguage] = useState("");
   const [style, setStyle] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSong, setSelectedSong] = useState<PlaylistSearchItem | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const normalizedQuery = normalizeSearchText(query);
   const languages = useMemo(() => Array.from(new Set(items.map((item) => item.language))).sort(), [items]);
   const styles = useMemo(() => Array.from(new Set(items.map((item) => item.style))).sort(), [items]);
@@ -70,6 +72,30 @@ export default function PlaylistSearch({ items }: PlaylistSearchProps) {
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (!selectedSong) {
+      if (dialog.open) dialog.close();
+      return;
+    }
+
+    if (!dialog.open) dialog.showModal();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [selectedSong]);
+
+  const pickRandomSong = () => {
+    if (filteredItems.length === 0) return;
+    const candidates =
+      filteredItems.length > 1 ? filteredItems.filter((item) => item.id !== selectedSong?.id) : filteredItems;
+    setSelectedSong(candidates[Math.floor(Math.random() * candidates.length)]);
+  };
 
   return (
     <>
@@ -123,6 +149,17 @@ export default function PlaylistSearch({ items }: PlaylistSearchProps) {
             </option>
           ))}
         </select>
+        <button
+          className="button-quiet min-h-[44px] shrink-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+          type="button"
+          onClick={pickRandomSong}
+          disabled={filteredItems.length === 0}
+          aria-label="随机点歌"
+          title="随机点歌"
+        >
+          <Shuffle size={16} aria-hidden="true" />
+          随机点歌
+        </button>
       </div>
       <p className="mt-3 text-xs text-muted" role="status" aria-live="polite">
         {normalizedQuery || language || style ? `找到 ${filteredItems.length} 首院藏` : `共 ${items.length} 首院藏`}
@@ -163,6 +200,71 @@ export default function PlaylistSearch({ items }: PlaylistSearchProps) {
         )}
       </div>
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+      <dialog
+        ref={dialogRef}
+        className="m-auto max-h-[calc(100dvh-40px)] w-[calc(100%-40px)] max-w-[520px] overflow-y-auto border border-line bg-paper p-0 text-ink shadow-[0_22px_70px_rgba(32,37,44,.24)] backdrop:bg-ink/35 backdrop:backdrop-blur-[2px]"
+        aria-labelledby="random-song-title"
+        aria-describedby="random-song-summary"
+        onClose={() => setSelectedSong(null)}
+        onClick={(event) => {
+          if (event.target !== event.currentTarget) return;
+          const bounds = event.currentTarget.getBoundingClientRect();
+          if (
+            event.clientX < bounds.left ||
+            event.clientX > bounds.right ||
+            event.clientY < bounds.top ||
+            event.clientY > bounds.bottom
+          ) {
+            event.currentTarget.close();
+          }
+        }}
+      >
+        {selectedSong ? (
+          <div className="relative px-7 py-7 max-md:px-5 max-md:py-6">
+            <button
+              className="absolute right-4 top-4 grid size-8 place-items-center text-muted transition-colors hover:text-red"
+              type="button"
+              onClick={() => dialogRef.current?.close()}
+              aria-label="关闭随机点歌弹窗"
+              title="关闭"
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+            <p className="eyebrow mb-2 flex items-center gap-2">
+              <Dice5 size={14} aria-hidden="true" />
+              今夜点到
+            </p>
+            <div className="flex items-start gap-5 border-y border-line py-5 max-md:gap-4" aria-live="polite">
+              <div className="shrink-0">
+                <PlaylistCover src={selectedSong.coverUrl} songName={selectedSong.songName} />
+              </div>
+              <div className="min-w-0 pt-1">
+                <h2 id="random-song-title" className="break-words text-2xl font-medium max-md:text-xl">
+                  {selectedSong.songName}
+                </h2>
+                <p className="mt-2 break-words text-sm text-muted">
+                  {selectedSong.artist} · {selectedSong.language}
+                </p>
+                <span className="mt-3 inline-block text-xs tracking-[0.08em] text-red">{selectedSong.style}</span>
+              </div>
+            </div>
+            <p id="random-song-summary" className="mt-5 break-words leading-7 text-muted">
+              {selectedSong.summary}
+            </p>
+            <div className="mt-6 flex justify-end">
+              <button
+                className="button-primary disabled:cursor-not-allowed"
+                type="button"
+                onClick={pickRandomSong}
+                disabled={filteredItems.length < 2}
+              >
+                <Shuffle size={16} aria-hidden="true" />
+                再点一首
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </dialog>
     </>
   );
 }
