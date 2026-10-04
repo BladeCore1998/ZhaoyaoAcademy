@@ -427,6 +427,7 @@
   font-weight: 600;
   letter-spacing: 0.03em;
   line-height: 1.18;
+  opacity: 0.9;
 }
 
 .user-hero .hero-lede {
@@ -513,7 +514,7 @@
   }
 
   .user-hero::after {
-    background-position: 50% bottom;
+    background-position: 37% bottom;
     opacity: 1;
   }
 
