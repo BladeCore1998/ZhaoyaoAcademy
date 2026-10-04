@@ -118,7 +118,20 @@
   position: fixed;
   z-index: -1;
   inset: 0;
+  background-position: calc(100% + clamp(0px, 8vw, 160px)) bottom;
+  background-repeat: no-repeat;
+  background-size: auto min(100vh, 960px);
+  content: "";
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.user-layout::after {
+  position: fixed;
+  z-index: -2;
+  inset: 0;
   background-position: center;
+  background-repeat: no-repeat;
   background-size: cover;
   content: "";
   opacity: 0.08;
@@ -138,6 +151,10 @@
 }
 
 .user-layout[data-season="spring"]::before {
+  background-image: url("/inspiration/3.webp");
+}
+
+.user-layout[data-season="spring"]::after {
   background-image: url("/inspiration/Chun.webp");
 }
 
@@ -153,10 +170,18 @@
 }
 
 .user-layout[data-season="summer"]::before {
+  background-image: url("/inspiration/3.2.webp");
+}
+
+.user-layout[data-season="summer"]::after {
   background-image: url("/inspiration/Xia.webp");
 }
 
 .user-layout[data-season="autumn"]::before {
+  background-image: url("/inspiration/3.2.webp");
+}
+
+.user-layout[data-season="autumn"]::after {
   background-image: url("/inspiration/Qiu.webp");
 }
 
@@ -172,6 +197,10 @@
 }
 
 .user-layout[data-season="winter"]::before {
+  background-image: url("/inspiration/3.webp");
+}
+
+.user-layout[data-season="winter"]::after {
   background-image: url("/inspiration/Dong.webp");
 }
 
@@ -309,6 +338,7 @@
   display: flex;
   align-items: center;
   overflow: hidden;
+  isolation: isolate;
   border-bottom: 1px solid var(--line);
   background:
     linear-gradient(
@@ -318,6 +348,19 @@
       transparent 100%
     ),
     url("/inspiration/Qiu.webp") center / cover;
+}
+
+.user-hero::after {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-image: url("/inspiration/3.2.webp");
+  background-position: calc(100% + clamp(0px, 8vw, 160px)) bottom;
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+  content: "";
+  opacity: 1;
+  pointer-events: none;
 }
 
 .user-layout[data-season="spring"] .user-hero {
@@ -331,6 +374,10 @@
     url("/inspiration/Chun.webp");
 }
 
+.user-layout[data-season="spring"] .user-hero::after {
+  background-image: url("/inspiration/3.webp");
+}
+
 .user-layout[data-season="summer"] .user-hero {
   background-image:
     linear-gradient(
@@ -340,6 +387,14 @@
       transparent 100%
     ),
     url("/inspiration/Xia.webp");
+}
+
+.user-layout[data-season="summer"] .user-hero::after {
+  background-image: url("/inspiration/3.2.webp");
+}
+
+.user-layout[data-season="autumn"] .user-hero::after {
+  background-image: url("/inspiration/3.2.webp");
 }
 
 .user-layout[data-season="winter"] .user-hero {
@@ -353,7 +408,13 @@
     url("/inspiration/Dong.webp");
 }
 
+.user-layout[data-season="winter"] .user-hero::after {
+  background-image: url("/inspiration/3.webp");
+}
+
 .user-hero-content {
+  position: relative;
+  z-index: 1;
   width: min(1180px, 100%);
   margin-inline: auto;
   padding: 82px 24px 92px;
@@ -389,7 +450,7 @@
 }
 
 .user-featured-book {
-  background: var(--red);
+  background: color-mix(in srgb, var(--red) 65%, transparent);
   color: var(--paper);
 }
 
@@ -445,6 +506,17 @@
     background-position: 64% center;
   }
 
+  .user-layout::before {
+    background-position: 50% bottom;
+    background-size: auto 86vh;
+    opacity: 0.4;
+  }
+
+  .user-hero::after {
+    background-position: 50% bottom;
+    opacity: 1;
+  }
+
   .user-hero-content {
     padding: 64px 16px 72px;
   }
@@ -484,6 +556,10 @@
   background-image: linear-gradient(rgba(238, 242, 237, 0.82), rgba(238, 242, 237, 0.9)), url("/inspiration/Chun.webp");
 }
 
+.admin-layout[data-season="spring"] .admin-main-layout::before {
+  background-image: url("/inspiration/3.webp");
+}
+
 .admin-layout[data-season="summer"] {
   --admin-primary: #317e7d;
   --admin-primary-soft: #e7f2f1;
@@ -493,6 +569,10 @@
 
 .admin-layout[data-season="summer"] .admin-main-layout {
   background-image: linear-gradient(rgba(237, 243, 242, 0.82), rgba(237, 243, 242, 0.9)), url("/inspiration/Xia.webp");
+}
+
+.admin-layout[data-season="summer"] .admin-main-layout::before {
+  background-image: url("/inspiration/3.2.webp");
 }
 
 .admin-layout[data-season="autumn"] {
@@ -506,6 +586,10 @@
   background-image: linear-gradient(rgba(243, 240, 233, 0.82), rgba(243, 240, 233, 0.9)), url("/inspiration/Qiu.webp");
 }
 
+.admin-layout[data-season="autumn"] .admin-main-layout::before {
+  background-image: url("/inspiration/3.2.webp");
+}
+
 .admin-layout[data-season="winter"] {
   --admin-primary: #526783;
   --admin-primary-soft: #e9eef5;
@@ -515,6 +599,10 @@
 
 .admin-layout[data-season="winter"] .admin-main-layout {
   background-image: linear-gradient(rgba(238, 241, 245, 0.82), rgba(238, 241, 245, 0.9)), url("/inspiration/Dong.webp");
+}
+
+.admin-layout[data-season="winter"] .admin-main-layout::before {
+  background-image: url("/inspiration/3.webp");
 }
 
 .admin-desktop-sider {
@@ -653,9 +741,29 @@
 }
 
 .admin-main-layout {
+  position: relative;
+  isolation: isolate;
   min-width: 0;
   background-position: center;
   background-size: cover;
+}
+
+.admin-main-layout::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-position: calc(100% + clamp(0px, 8vw, 160px)) bottom;
+  background-repeat: no-repeat;
+  background-size: auto min(100vh, 960px);
+  content: "";
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.admin-header,
+.admin-content {
+  position: relative;
+  z-index: 1;
 }
 
 .admin-header {
@@ -1136,6 +1244,11 @@
 @media (max-width: 991px) {
   .admin-desktop-sider {
     display: none;
+  }
+
+  .admin-main-layout::before {
+    background-position: 50% bottom;
+    background-size: auto 86vh;
   }
 
   .admin-mobile-menu-button {
