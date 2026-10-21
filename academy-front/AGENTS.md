@@ -3,7 +3,7 @@
 ## 技术栈
 
 - Next.js App Router + TypeScript。
-- 使用 `pnpm@11.12.0` 管理依赖，必须提交 `pnpm-lock.yaml`。
+- 使用 `pnpm@11.11.0` 管理依赖，必须提交 `pnpm-lock.yaml`。
 - 登录使用 Better Auth，数据库访问使用 Drizzle ORM + `mysql2`。
 - Redis 用于认证 secondary storage、短期状态和后续限流能力。
 - 管理端使用 Ant Design；用户端保持独立的古风视觉和交互。

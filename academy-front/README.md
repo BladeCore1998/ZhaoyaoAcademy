@@ -4,7 +4,7 @@ Next.js 用户端、管理端和认证服务。
 
 ## 依赖源
 
-前端使用 pnpm `11.12.0`，项目 `.npmrc`、Dockerfile 和 Jenkinsfile 默认将 npm registry 设置为：
+前端使用 pnpm `11.11.0`，项目 `.npmrc`、Dockerfile 和 Jenkinsfile 默认将 npm registry 设置为：
 
 ```text
 https://registry.npmmirror.com
