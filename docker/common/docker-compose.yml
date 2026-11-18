@@ -36,18 +36,21 @@ services:
       retries: 20
     restart: unless-stopped
 
-  minio:
-    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
-    command: ["server", "/data", "--console-address", ":9001"]
+  rustfs:
+    image: rustfs/rustfs:1.0.5
     environment:
-      MINIO_ROOT_USER: academy
-      MINIO_ROOT_PASSWORD: academy-secret
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-academy}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-academy-secret}
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
       TZ: Asia/Shanghai
     ports:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - minio-data:/data
+      - rustfs-data:/data
     networks:
       - academy-net
     restart: unless-stopped
@@ -62,5 +65,5 @@ volumes:
     name: zhaoyao-academy-mysql-data
   redis-data:
     name: zhaoyao-academy-redis-data
-  minio-data:
-    name: zhaoyao-academy-minio-data
+  rustfs-data:
+    name: zhaoyao-academy-rustfs-data
