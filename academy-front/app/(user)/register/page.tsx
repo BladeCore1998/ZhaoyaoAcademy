@@ -40,7 +40,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center bg-paper p-6">
+    <div className="grid min-h-screen place-items-center p-6">
       <div className="relative w-[min(100%,430px)] border border-line bg-[rgba(255,251,241,.72)] p-10 max-md:p-7">
         <Link className="absolute right-6 top-5 text-sm text-red transition-colors hover:text-ink" href="/">
           返回首页

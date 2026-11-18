@@ -32,7 +32,7 @@ export default function LoginPage() {
     setPending(false);
 
     if (!response.ok) {
-      setError("邮箱或密码不正确，请完成验证码后再试。");
+      setError("邮箱或密码不正确，请修改后再试。");
       setCaptchaRequired(true);
       setCaptcha(createCaptcha());
       setCaptchaInput("");
@@ -68,25 +68,25 @@ export default function LoginPage() {
     setCaptchaOpen(false);
     setCaptchaRequired(false);
     setCaptchaError("");
-    void attemptLogin();
+    setError("验证码已通过，请修改密码后再次登录。");
   }
 
   return (
-    <div className="grid min-h-screen place-items-center bg-paper p-6">
-      <div className="relative w-[min(100%,430px)] border border-line bg-[rgba(255,251,241,.72)] p-10 max-md:p-7">
+    <div className="grid min-h-screen place-items-center p-6">
+      <div className="relative w-[min(100%,380px)] border border-line bg-[rgba(255,251,241,.82)] p-7 max-md:p-6">
         <Link className="absolute right-6 top-5 text-sm text-red transition-colors hover:text-ink" href="/">
           返回首页
         </Link>
         <p className="eyebrow">回到书院</p>
-        <h1 className="text-5xl">登录</h1>
+        <h1 className="text-4xl">登录</h1>
         <p className="leading-[1.8] text-muted">登录后可以收藏歌单、书单，也可以查看自己的投递。</p>
-        <div className="mt-6 grid grid-cols-2 border border-line text-sm" aria-label="登录方式">
+        <div className="mt-5 grid grid-cols-2 border border-line text-sm" aria-label="登录方式">
           <span className="bg-red px-3 py-2 text-center text-[#fffaf0]">登录</span>
           <Link className="px-3 py-2 text-center text-red transition-colors hover:bg-red/8" href="/register">
             注册
           </Link>
         </div>
-        <form className="my-7 grid gap-4" onSubmit={handleSubmit}>
+        <form className="my-5 grid gap-3" onSubmit={handleSubmit}>
           <label className="grid gap-1.5 text-sm">
             邮箱
             <input
@@ -139,7 +139,9 @@ export default function LoginPage() {
             <h2 id="captcha-title" className="text-2xl">
               请输入验证码
             </h2>
-            <p className="mt-2 text-sm leading-7 text-muted">登录失败后需要完成一次校验，验证通过会自动重试登录。</p>
+            <p className="mt-2 text-sm leading-7 text-muted">
+              登录失败后需要完成一次校验，验证通过后请修改密码，再次点击登录。
+            </p>
             <form className="mt-5 grid gap-4" onSubmit={handleCaptchaSubmit}>
               <div className="flex items-stretch gap-3">
                 <div
@@ -172,7 +174,7 @@ export default function LoginPage() {
               />
               {captchaError ? <p className="form-error">{captchaError}</p> : null}
               <button className="button-primary" disabled={pending} type="submit">
-                {pending ? "正在校验…" : "验证并重试"}
+                {pending ? "正在校验…" : "验证并返回"}
               </button>
             </form>
           </div>
