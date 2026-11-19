@@ -35,9 +35,20 @@ docker compose -f docker/common/docker-compose.yml up -d
 /srv/apps/ZhaoyaoAcademy/academy-front/Dockerfile
 /srv/apps/ZhaoyaoAcademy/academy-front/.env
 /srv/apps/ZhaoyaoAcademy/academy-py/Dockerfile
+/srv/apps/ZhaoyaoAcademy/academy-py/pyproject.toml
+/srv/apps/ZhaoyaoAcademy/academy-py/uv.lock
 ```
 
 前端脚本会执行 `git -C "$PROJECT_DIR" pull --ff-only`，因此该目录必须是可快进更新的 Git 工作区。
+
+Python 镜像内固定使用 uv `0.11.3`，按 `uv.lock` 安装依赖，不再使用 Poetry。
+部署服务器只需提供 Docker，无需额外安装 uv；更新 Python 依赖时应先在开发环境
+更新锁文件并通过 [Python 服务校验](../academy-py/README.md#依赖与校验)。
+
+Python 部署使用 `python -m app prod`，脚本在可选环境文件之后显式传入
+`ACADEMY_ENV=prod`，不会因 `.env` 中的开发设置开放文档。
+生产环境 `/openapi.json`、`/docs`、`/redoc` 和 `/docs/oauth2-redirect` 返回 404；
+健康检查继续使用 `/api/v1/health`。
 
 ## 平台参数
 
@@ -50,7 +61,7 @@ docker compose -f docker/common/docker-compose.yml up -d
 | `IMAGE_TAG` | `YYYYMMDDHHMM` | 镜像标签，可由平台覆盖 |
 | `PY_ENV_FILE` | `$PROJECT_DIR/academy-py/.env` | Python 服务可选环境文件 |
 
-平台脚本不应把数据库密码、Better Auth 密钥或 MinIO 密钥写入命令行。前端运行时环境通过 `academy-front/.env` 传入。
+平台脚本不应把数据库密码、Better Auth 密钥或 RustFS 密钥写入命令行。前端运行时环境通过 `academy-front/.env` 传入。
 
 ## 手动执行
 

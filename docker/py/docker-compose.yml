@@ -5,8 +5,9 @@ services:
       dockerfile: Dockerfile
     environment:
       TZ: Asia/Shanghai
+      ACADEMY_ENV: prod
     ports:
-      - "8000:8000"
+      - "${PY_PORT:-8000}:8000"
     networks:
       - academy-net
     restart: unless-stopped

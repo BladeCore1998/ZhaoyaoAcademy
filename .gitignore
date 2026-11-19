@@ -13,3 +13,4 @@ dist/
 .playwright-mcp/
 /academy-front/tsconfig.tsbuildinfo
 .idea/
+.ccgui/

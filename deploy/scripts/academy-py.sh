@@ -22,7 +22,7 @@ test -d "$PROJECT_DIR" || fail "项目目录不存在：$PROJECT_DIR"
 test -d "$PROJECT_DIR/.git" || fail "项目目录不是 Git 工作区：$PROJECT_DIR"
 test -f "$PROJECT_DIR/academy-py/Dockerfile" || fail "缺少 academy-py/Dockerfile"
 test -f "$PROJECT_DIR/academy-py/pyproject.toml" || fail "缺少 academy-py/pyproject.toml"
-test -f "$PROJECT_DIR/academy-py/poetry.lock" || fail "缺少 academy-py/poetry.lock"
+test -f "$PROJECT_DIR/academy-py/uv.lock" || fail "缺少 academy-py/uv.lock"
 
 git -C "$PROJECT_DIR" pull --ff-only
 docker network inspect "$DOCKER_NETWORK" >/dev/null 2>&1 ||
@@ -44,6 +44,7 @@ if test -s "$ENV_FILE"; then
     --publish 8000:8000 \
     --env-file "$ENV_FILE" \
     --env TZ=Asia/Shanghai \
+    --env ACADEMY_ENV=prod \
     "$APP_IMAGE" >/dev/null
 else
   docker create \
@@ -52,6 +53,7 @@ else
     --network "$DOCKER_NETWORK" \
     --publish 8000:8000 \
     --env TZ=Asia/Shanghai \
+    --env ACADEMY_ENV=prod \
     "$APP_IMAGE" >/dev/null
 fi
 docker start "$APP_CONTAINER" >/dev/null

@@ -3,7 +3,7 @@
 本文件只描述跨项目的共同约定。进入具体子项目后，必须继续阅读对应的局部规约：
 
 - [academy-front/AGENTS.md](./academy-front/AGENTS.md)：Next.js、用户端、管理端、认证、Drizzle 和 pnpm。
-- [academy-py/AGENTS.md](./academy-py/AGENTS.md)：Python 3.12、Poetry、FastAPI 和中间件路由。
+- [academy-py/AGENTS.md](./academy-py/AGENTS.md)：Python 3.12、uv、FastAPI 和中间件路由。
 
 ## 总体结构
 
@@ -36,8 +36,8 @@ docker compose -f docker/docker-compose.yml up --build
 默认服务：
 
 - Next.js：`http://localhost:3000`
-- FastAPI：`http://localhost:8000/docs`
+- FastAPI 文档（仅本地 dev；Docker prod 不开放）：`http://localhost:8000/docs`
 - MySQL：`localhost:3306`
 - Redis：`localhost:6379`
-- MinIO API：`http://localhost:9000`
-- MinIO Console：`http://localhost:9001`
+- RustFS API：`http://localhost:9000`
+- RustFS Console：`http://localhost:9001`

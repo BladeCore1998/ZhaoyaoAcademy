@@ -1,10 +1,20 @@
 from fastapi import APIRouter, FastAPI
 from pydantic import BaseModel
 
+from app.config import Settings
+
+settings = Settings()
+
 app = FastAPI(
     title="招摇书院中间件服务",
     version="0.1.0",
     description="当前仅提供路由骨架，业务能力后续按领域逐步接入。",
+    openapi_url="/openapi.json" if settings.is_development else None,
+    docs_url="/docs" if settings.is_development else None,
+    redoc_url="/redoc" if settings.is_development else None,
+    swagger_ui_oauth2_redirect_url="/docs/oauth2-redirect"
+    if settings.is_development
+    else None,
 )
 
 api_router = APIRouter(prefix="/api/v1")

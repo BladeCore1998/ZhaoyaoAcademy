@@ -10,7 +10,7 @@
 - 管理端统一位于 `/admin`，首版角色为 `user` 和 `admin`。
 - Better Auth 负责登录、退出、会话和权限入口。
 - Drizzle ORM 连接 MySQL，Redis 作为会话、限流和短期状态的预留存储。
-- MinIO 提供 S3 兼容的头像、封面和附件存储。
+- RustFS 提供 S3 兼容的头像、封面和附件存储。
 - `academy-py` 当前仅提供 FastAPI 路由骨架、健康检查和预留路由。
 
 ## 项目结构
@@ -28,10 +28,10 @@
 │   └── pnpm-lock.yaml          # 前端依赖锁定文件
 ├── academy-py/                 # FastAPI 中间件/算法转换服务骨架
 │   ├── app/                    # FastAPI 应用和 API 路由
-│   ├── pyproject.toml          # Poetry 项目配置
-│   └── poetry.lock             # Python 依赖锁定文件
+│   ├── pyproject.toml          # uv/PEP 621 项目配置
+│   └── uv.lock                 # Python 依赖锁定文件
 ├── docker/
-│   ├── common/docker-compose.yml # MySQL、Redis、MinIO 和共享网络
+│   ├── common/docker-compose.yml # MySQL、Redis、RustFS 和共享网络
 │   ├── front/docker-compose.yml  # academy-front 和数据库迁移
 │   ├── py/docker-compose.yml     # academy-py
 │   └── README.md                 # Docker 服务说明
@@ -74,14 +74,14 @@ docker compose -f docker/common/docker-compose.yml down
 | 服务 | 地址 | 用途 |
 | --- | --- | --- |
 | Next.js 用户端和管理端 | <http://localhost:3000> | Web 应用 |
-| FastAPI 文档 | <http://localhost:8000/docs> | API 文档 |
+| FastAPI 文档（仅 dev） | <http://localhost:8000/docs> | API 文档；Docker 默认 prod 不开放 |
 | FastAPI 健康检查 | <http://localhost:8000/api/v1/health> | 服务状态 |
 | MySQL | `localhost:3306` | 账户和业务数据 |
 | Redis | `localhost:6379` | 会话和短期状态 |
-| MinIO API | <http://localhost:9000> | 对象存储 API |
-| MinIO Console | <http://localhost:9001> | 对象存储管理控制台 |
+| RustFS API | <http://localhost:9000> | 对象存储 API |
+| RustFS Console | <http://localhost:9001> | 对象存储管理控制台 |
 
-Docker Compose 使用开发环境默认凭据，仅适用于本地开发。生产环境应使用独立的密钥文件，并修改数据库、Redis、MinIO 和 Better Auth 配置。
+Docker Compose 使用开发环境默认凭据，仅适用于本地开发。生产环境应使用独立的密钥文件，并修改数据库、Redis、RustFS 和 Better Auth 配置。
 
 ## 本地开发
 
@@ -96,7 +96,7 @@ Copy-Item .env.example .env.local
 pnpm dev
 ```
 
-开发服务器默认运行在 <http://localhost:3000>。直接运行前端时，请确认 MySQL、Redis 和 MinIO 已启动，并根据本机地址调整 `.env.local`。
+开发服务器默认运行在 <http://localhost:3000>。直接运行前端时，请确认 MySQL、Redis 和 RustFS 已启动，并根据本机地址调整 `.env.local`。
 
 常用命令：
 
@@ -109,13 +109,23 @@ pnpm db:migrate
 
 ### FastAPI 服务
 
-要求 Python 3.12 和 Poetry 2.x。项目已配置清华 PyPI 源：
+要求 Python 3.12 和 uv 0.11.x（本次验证为 0.11.3）。项目已配置清华 PyPI 源，
+uv 自动管理项目内 `.venv`，无需激活 Conda：
 
 ```powershell
 cd academy-py
-poetry install
-poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uv sync --locked
+uv run --locked python -m app dev
 ```
+
+生产方式启动使用 `uv run --locked python -m app prod`，可追加 `--workers 2`。
+dev 开放 `/openapi.json`、`/docs` 和 `/redoc` 并开启热重载；prod 关闭文档入口和
+热重载，文档请求返回 404。Docker 和部署脚本默认使用 prod。
+
+依赖变更后在 `academy-py` 目录执行 `uv lock` 更新 `uv.lock`，提交前执行
+`uv lock --check`、`uv pip check`、`uv run --locked python -m unittest discover -s tests -v`
+和 `uv run --locked python -m compileall -q app tests`。
+uv 安装方法、版本约束及启动验证记录见 [Python 服务说明](academy-py/README.md)。
 
 服务提供以下当前可用或预留路由：
 
@@ -130,17 +140,25 @@ poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 - `academy-front/.env.example`
 - `academy-py/.env.example`
+- `docker/common/.env.example`
+- `docker/front/.env.example`
+- `docker/py/.env.example`
+
+Docker 配置模板复制为对应目录的 `.env` 后使用，具体配置与启动命令见
+[Docker 部署说明](docker/README.md)。
 
 不要把真实密钥提交到仓库。Docker Compose 中的默认账号和密码仅用于本地开发。
 
-## Jenkins
+## 构建与部署
 
-两个子项目各自包含可被 Jenkins Pipeline 直接识别的单项目流水线：
+仓库中的单项目部署入口位于 `deploy/scripts/`：
 
-- 前端：`academy-front/Jenkinsfile`
-- Python：`academy-py/Jenkinsfile`
+- 前端：`deploy/scripts/academy-front.sh`
+- Python：`deploy/scripts/academy-py.sh`
 
-在 Jenkins 中分别创建两个 Pipeline 任务，并将 Script Path 设置为对应路径。默认流水线执行依赖安装、校验和 Docker 构建；只有显式打开 `PUSH_IMAGE` 或 `DEPLOY` 参数时才会推送镜像或通过 SSH 部署。
+脚本可由部署平台或 Jenkins 调用，执行 Docker 构建、容器替换及健康检查；
+Python 构建按 `uv.lock` 安装依赖。调用前应在 CI 中执行对应项目的校验，
+参数和前置条件见 [平台部署脚本说明](deploy/README.md)。
 
 ## 领域边界
 

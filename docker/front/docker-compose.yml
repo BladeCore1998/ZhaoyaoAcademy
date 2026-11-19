@@ -9,15 +9,18 @@ services:
         required: true
       - path: ../../academy-front/.env
         required: false
+      - path: .env
+        required: false
     environment:
-      DATABASE_URL: mysql://academy:academy@mysql:3306/academy
+      DATABASE_URL: ${DATABASE_URL:-mysql://academy:academy@mysql:3306/academy}
       TZ: Asia/Shanghai
     command:
       - sh
       - -c
       - >-
-        node -e 'const net=require("net"); const deadline=Date.now()+120000;
-        (function wait(){const socket=net.createConnection({host:"mysql",port:3306});
+        node -e 'const net=require("net"); const database=new URL(process.env.DATABASE_URL);
+        const deadline=Date.now()+120000;
+        (function wait(){const socket=net.createConnection({host:database.hostname,port:Number(database.port||3306)});
         socket.on("connect",()=>{socket.end(); process.exit(0)}).on("error",()=>{socket.destroy();
         if(Date.now()>deadline) process.exit(1); setTimeout(wait,2000)})})()'
         && pnpm db:migrate
@@ -34,16 +37,18 @@ services:
         required: true
       - path: ../../academy-front/.env
         required: false
+      - path: .env
+        required: false
     environment:
-      DATABASE_URL: mysql://academy:academy@mysql:3306/academy
-      REDIS_URL: redis://redis:6379
-      RUSTFS_ENDPOINT: http://rustfs:9000
+      DATABASE_URL: ${DATABASE_URL:-mysql://academy:academy@mysql:3306/academy}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      RUSTFS_ENDPOINT: ${RUSTFS_ENDPOINT:-http://rustfs:9000}
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-academy}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-academy-secret}
-      RUSTFS_BUCKET: zhaoyao-academy
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-zhaoyao-academy}
       TZ: Asia/Shanghai
     ports:
-      - "3000:3000"
+      - "${FRONT_PORT:-3000}:3000"
     depends_on:
       academy-migrate:
         condition: service_completed_successfully
