@@ -41,6 +41,15 @@ pnpm build
 pnpm start
 ```
 
+需要频繁在本地以生产模式查看效果时，可用一条命令完成构建和启动：
+
+```powershell
+pnpm preview   # 等价于 pnpm build && pnpm start
+```
+
+生产模式不会出现 Next.js 开发指示器（左下角用于查看日志/开发工具的小图标），
+但也不提供热更新；改动源码后需要重新执行 `pnpm preview`。
+
 ## Standalone 部署
 
 `pnpm build` 会生成完整的 `.next/standalone` 目录，包含运行依赖、`public`、

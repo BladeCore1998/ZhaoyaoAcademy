@@ -72,6 +72,7 @@ pnpm lint
 pnpm lint:fix
 pnpm check
 pnpm build
+pnpm preview
 pnpm db:generate
 pnpm db:migrate
 ```
