@@ -32,6 +32,12 @@ export default function LoginPage() {
     setPending(false);
 
     if (!response.ok) {
+      // 只有 401 才是账号密码错误；其它状态（来源校验、限流、服务异常）
+      // 必须单独提示，否则会被误判成密码输错。
+      if (response.status !== 401) {
+        setError(`登录服务异常（HTTP ${response.status}），请稍后再试。`);
+        return;
+      }
       setError("邮箱或密码不正确，请修改后再试。");
       setCaptchaRequired(true);
       setCaptcha(createCaptcha());
