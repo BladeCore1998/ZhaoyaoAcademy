@@ -20,23 +20,40 @@
 
 - 表结构定义位于 `db/schema.ts`。
 - 版本化 SQL migration 位于 `drizzle/`，包括 SQL 文件和 `drizzle/meta/`。
-- 所有数据库 DDL 必须为表和字段补充明确的 `COMMENT` 注释；生成 migration 后必须检查 SQL，确保新增或修改的表、字段注释没有遗漏。
+- 所有数据库 DDL 必须为表和字段补充明确的 `COMMENT` 注释。`drizzle-kit` 的 MySQL 方言不生成 `COMMENT`，生成 migration 后必须手工补齐。
 - 修改 `db/schema.ts` 后运行：
 
 ```powershell
 pnpm db:generate
 ```
 
-- 必须提交生成的 migration 文件。
+- 必须提交生成的 migration 文件；`pnpm db:check` 会对比 schema 与 `drizzle/`，发现未生成的变更直接失败，已接入 `pnpm check` 和 pre-commit。
+- 提交前用 `pnpm db:lint` 检查迁移 SQL 的 COMMENT 与字符集；pre-commit 会对 `drizzle/*.sql` 自动执行。
+- 手写迁移（没有 `drizzle/meta/<序号>_snapshot.json` 的文件）首行必须是 `SET NAMES utf8mb4;`，中文枚举或注释依赖它。
 - 应用数据库变更使用：
 
 ```powershell
 pnpm db:migrate
 ```
 
-- 应用启动默认先执行尚未应用的数据库 migration；本地 `pnpm dev` 和 Docker 启动都必须遵守这一顺序。migration 失败时不得继续启动应用。
+- 启动流程**不执行**数据库 migration：`pnpm dev`、`pnpm start`、`node server.js`、Docker `up` 和 `deploy/scripts/academy-front.sh` 都只启动应用。需要更新数据库时显式执行 `pnpm db:migrate`（Docker 用 `deploy/scripts/migrate-academy-front.sh`）。
+- 新增字段后必须先跑 `pnpm db:generate` 并应用迁移，再启动应用；未生成迁移就启动会导致代码类型与真实表结构不一致。
+- 禁止修改已经应用过的迁移文件：`__drizzle_migrations` 按 `created_at` 判断是否应用，改动文件不会重放，只会让新老环境结构不一致。发现写错时应新增一条迁移修正。
 - 禁止使用 `drizzle-kit push` 作为生产或 Docker 部署的结构同步方式。
+- 多人并行修改 `db/schema.ts` 时，`drizzle/meta/_journal.json` 和快照文件必然冲突：合并时按序号顺序保留双方的迁移，不要丢弃任何一侧，合并后跑一次 `pnpm db:check`。
+- 写进迁移的 seed 数据会对所有全新数据库（包括生产）执行；与示例内容无关的数据不要放进迁移。
 - 认证相关表必须与 Better Auth adapter 的字段要求保持兼容。
+
+## 迁移失败处理
+
+MySQL 的 DDL 隐式提交且 `drizzle-kit` 没有回滚能力，迁移中途失败时数据库可能处于半应用状态：
+
+1. 不要直接重复执行 `pnpm db:migrate`，`ADD COLUMN` 等语句不幂等，会报“列已存在”。
+2. 用 `SHOW CREATE TABLE` 或 `information_schema` 核对失败语句实际执行到哪一步。
+3. 手工补齐剩余语句，再按需补写迁移记录：
+   `insert into __drizzle_migrations (hash, created_at) values ('<迁移文件内容的 sha256>', <_journal.json 中该条的 when>)`。
+   hash 可用 `node -e "const c=require('crypto'),f=require('fs');console.log(c.createHash('sha256').update(f.readFileSync('drizzle/0005_xxx.sql')).digest('hex'))"` 计算。
+4. 补记录前先确认结构与迁移 SQL 完全一致，否则后续迁移会在错误基础上继续执行。
 
 ## 时间处理
 
@@ -71,6 +88,6 @@ pnpm db:migrate
 
 ## 文件与安全
 
-- 环境变量只放在 `.env.local` 或部署密钥文件，不提交真实密钥。
+- 环境变量只放在 `.env` 或部署密钥文件，不提交真实密钥。
 - 不要把 `node_modules`、`.next`、构建产物或本地环境文件提交到 Git。
 - 不要在此项目内引入 Java/JDBC 作为应用数据库驱动；如采用 Flyway，必须作为独立迁移服务。

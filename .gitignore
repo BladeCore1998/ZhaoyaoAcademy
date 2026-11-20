@@ -9,6 +9,7 @@ __pycache__/
 .env
 .env.*
 !.env.example
+/academy-front/drizzle-drift.tmp.config.ts
 dist/
 .playwright-mcp/
 /academy-front/tsconfig.tsbuildinfo

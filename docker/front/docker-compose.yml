@@ -1,5 +1,9 @@
 services:
+  # 手动迁移入口，不随 `up` 启动：
+  # docker compose -f docker/front/docker-compose.yml run --rm academy-migrate
   academy-migrate:
+    profiles:
+      - migrate
     build:
       context: ../../academy-front
       dockerfile: Dockerfile
@@ -49,9 +53,6 @@ services:
       TZ: Asia/Shanghai
     ports:
       - "${FRONT_PORT:-3000}:3000"
-    depends_on:
-      academy-migrate:
-        condition: service_completed_successfully
     networks:
       - academy-net
     restart: unless-stopped

@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@11.11.0",
   "scripts": {
-    "dev": "pnpm db:migrate && next dev",
+    "dev": "next dev",
     "build": "next build && node scripts/copy-standalone-assets.mjs",
     "start": "node scripts/start.mjs",
     "typecheck": "tsc --noEmit",
@@ -12,9 +12,12 @@
     "format:check": "prettier . --check",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm db:check",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "db:check": "node scripts/check-db-drift.mjs",
+    "db:lint": "node scripts/check-sql-comments.mjs",
+    "covers:fetch": "tsx scripts/fetch-covers.ts",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -22,7 +25,9 @@
       "prettier --write",
       "eslint --fix"
     ],
-    "*.{json,css,md,yml,yaml}": "prettier --write"
+    "*.{json,css,md,yml,yaml}": "prettier --write",
+    "db/schema.ts": "node scripts/check-db-drift.mjs",
+    "drizzle/*.sql": "node scripts/check-sql-comments.mjs"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.7",
@@ -49,8 +54,10 @@
     "eslint-config-prettier": "10.1.8",
     "husky": "9.1.7",
     "lint-staged": "16.2.7",
+    "opencc-js": "1.4.2",
     "prettier": "3.9.9",
     "tailwindcss": "4.3.3",
+    "tsx": "4.23.15",
     "typescript": "6.0.2"
   }
 }

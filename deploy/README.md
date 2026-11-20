@@ -8,17 +8,21 @@
 deploy/
 ├── README.md
 └── scripts/
-    ├── academy-front.sh  # 构建前端和迁移镜像，执行数据库迁移并部署 Next.js
-    └── academy-py.sh     # 构建并部署 FastAPI 服务
+    ├── migrate-academy-front.sh  # 构建迁移镜像并执行数据库迁移
+    ├── academy-front.sh          # 构建并部署 Next.js（不执行迁移）
+    └── academy-py.sh             # 构建并部署 FastAPI 服务
 ```
 
-两个脚本都会：
+部署脚本都会：
 
 - 从 `PROJECT_DIR` 指定的本地工程目录构建。
 - 使用 `Asia/Shanghai` 生成镜像标签并设置容器时区。
 - 使用固定 Docker 网络 `zhaoyao-academy-net`。
 - 替换同名旧容器并执行部署后的健康检查。
 - 失败时输出容器日志，便于平台收集构建日志。
+
+前端部署脚本**不会自动执行数据库迁移**。表结构有变更时，必须先运行
+`migrate-academy-front.sh`，再运行 `academy-front.sh`；顺序颠倒会让新代码运行在旧表结构上。
 
 ## 前置条件
 
@@ -68,12 +72,19 @@ Python 部署使用 `python -m app prod`，脚本在可选环境文件之后显�
 ```sh
 PROJECT_DIR=/srv/apps/ZhaoyaoAcademy \
 DOCKER_NETWORK=zhaoyao-academy-net \
+sh deploy/scripts/migrate-academy-front.sh
+
+PROJECT_DIR=/srv/apps/ZhaoyaoAcademy \
+DOCKER_NETWORK=zhaoyao-academy-net \
 sh deploy/scripts/academy-front.sh
 
 PROJECT_DIR=/srv/apps/ZhaoyaoAcademy \
 DOCKER_NETWORK=zhaoyao-academy-net \
 sh deploy/scripts/academy-py.sh
 ```
+
+迁移脚本每次都会重新构建 `migrator` 镜像，因此 `drizzle/` 里的新 SQL 会随镜像一起生效。
+没有新迁移时重复执行是安全的。
 
 部署完成后：
 

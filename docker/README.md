@@ -39,7 +39,13 @@ docker compose --env-file docker/front/.env -f docker/front/docker-compose.yml u
 docker compose --env-file docker/py/.env -f docker/py/docker-compose.yml up -d --build
 ```
 
-前端 Compose 包含一次性 `academy-migrate` 服务。它会在 MySQL 可连接后反复执行 `pnpm db:migrate`，迁移成功后才启动 Next.js。停止某个单项目：
+前端 Compose 默认不执行数据库迁移，`up` 后直接启动 Next.js。`academy-migrate` 服务被放在 `migrate` profile 下，不会随 `up` 启动；需要应用 `drizzle/` 中新增的迁移时手动运行：
+
+```powershell
+docker compose -f docker/front/docker-compose.yml run --rm academy-migrate
+```
+
+停止某个单项目：
 
 ```powershell
 docker compose -f docker/front/docker-compose.yml down
@@ -94,15 +100,25 @@ Python 容器默认通过 `python -m app prod` 启动，Compose 显式设置 `AC
 
 ## 数据库变更
 
-修改 `academy-front/db/schema.ts` 后，在前端目录生成 migration：
+修改 `academy-front/db/schema.ts` 后，在前端目录生成 migration，并补齐 COMMENT：
 
 ```powershell
 cd academy-front
 pnpm db:generate
+pnpm db:lint       # drizzle-kit 不生成 MySQL COMMENT，这里校验表/字段注释与字符集
 ```
 
-将生成的 `drizzle/*.sql` 和 `drizzle/meta/*` 一并提交。不要在生产环境使用 `drizzle-kit push`，统一通过前端 Compose 的 `academy-migrate` 或以下命令执行：
+每次修改 `db/schema.ts` 都必须生成迁移，并将 `drizzle/*.sql` 和 `drizzle/meta/*`
+一并提交；应用不会再在启动时自动同步表结构。`pnpm db:check`（已接入 `pnpm check` 和
+pre-commit）会拦住忘记生成迁移的提交。不要在生产环境使用 `drizzle-kit push`，
+统一通过以下命令手动应用：
 
 ```powershell
 pnpm db:migrate
+```
+
+或使用前端 Compose 的一次性迁移服务（迁移脚本在构建镜像时打包，缺少新迁移时需加 `--build`）：
+
+```powershell
+docker compose -f docker/front/docker-compose.yml run --rm --build academy-migrate
 ```

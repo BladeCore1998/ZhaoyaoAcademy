@@ -19,7 +19,7 @@ import {
   message,
 } from "antd";
 import type { UploadProps } from "antd";
-import { Edit3, ImagePlus, Plus, Search, Trash2 } from "lucide-react";
+import { Edit3, ImagePlus, Plus, Search, Sparkles, Trash2 } from "lucide-react";
 
 type ContentRecord = {
   id: number;
@@ -53,12 +53,22 @@ type ContentFilters = {
 
 const songStyles = ["流行", "古风", "抒情", "民谣", "中国风", "其他"];
 
+// 未读：暖灰（弱化）；在读：实心琥珀（焦点）；已读：浅墨玉绿（完成但不抢眼）
+const readingStatusTagProps: Record<string, { color: string; variant?: "solid" }> = {
+  未读: { color: "#968b7d" },
+  在读: { color: "#b45309", variant: "solid" },
+  已读: { color: "#2f6b56" },
+};
+
+const readingStatusTag = (status: string) => readingStatusTagProps[status] ?? readingStatusTagProps["未读"];
+
 export default function ContentManager({ resource, title }: ContentManagerProps) {
   const isPlaylist = resource === "playlists";
   const nameField = isPlaylist ? "songName" : "bookName";
   const nameLabel = isPlaylist ? "歌名" : "书名";
   const firstField = isPlaylist ? "language" : "category";
   const secondField = isPlaylist ? "style" : "country";
+  const creatorField = isPlaylist ? "artist" : "author";
   const firstLabel = isPlaylist ? "语言" : "类型";
   const secondLabel = isPlaylist ? "风格" : "国家";
   const bookStatusOptions = ["未读", "在读", "已读"];
@@ -68,6 +78,8 @@ export default function ContentManager({ resource, title }: ContentManagerProps)
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ContentRecord | null>(null);
   const [saving, setSaving] = useState(false);
+  const [resolvingCover, setResolvingCover] = useState(false);
+  const [resolvingId, setResolvingId] = useState<number | null>(null);
   const [form] = Form.useForm();
   const [queryForm] = Form.useForm<ContentFilters>();
   const [filters, setFilters] = useState<ContentFilters>({
@@ -182,6 +194,76 @@ export default function ContentManager({ resource, title }: ContentManagerProps)
     await load();
   }
 
+  async function requestCover(title: string, creator: string) {
+    const response = await fetch("/api/admin/covers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: isPlaylist ? "song" : "book", title, creator }),
+    });
+    const result = (await response.json().catch(() => null)) as {
+      url: string;
+      source: string;
+      score: number;
+      title: string;
+      creator: string;
+      error?: string;
+    } | null;
+    if (!response.ok || !result?.url) {
+      throw new Error(result?.error ?? "没有找到匹配的封面");
+    }
+    return result;
+  }
+
+  function describeCover(result: { title: string; creator: string; source: string; score: number }) {
+    return `${result.title}${result.creator ? ` - ${result.creator}` : ""}（${result.source}，${result.score} 分）`;
+  }
+
+  async function handleResolveCover() {
+    const title = String(form.getFieldValue(nameField) ?? "").trim();
+    const creator = String(form.getFieldValue(creatorField) ?? "").trim();
+    if (!title) {
+      message.warning(`请先填写${nameLabel}`);
+      return;
+    }
+
+    setResolvingCover(true);
+    try {
+      const result = await requestCover(title, creator);
+      form.setFieldValue("coverUrl", result.url);
+      message.success(`已解析：${describeCover(result)}`);
+    } catch (error) {
+      message.warning(error instanceof Error ? error.message : "封面解析失败");
+    } finally {
+      setResolvingCover(false);
+    }
+  }
+
+  async function resolveRecordCover(record: ContentRecord) {
+    const title = String(record[nameField as keyof ContentRecord] ?? "").trim();
+    const creator = String(record[creatorField as keyof ContentRecord] ?? "").trim();
+    if (!title) return;
+
+    setResolvingId(record.id);
+    try {
+      const result = await requestCover(title, creator);
+      const response = await fetch(`/api/admin/${resource}/${record.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coverUrl: result.url }),
+      });
+      if (!response.ok) {
+        message.error((await response.json().catch(() => null))?.error ?? "封面保存失败");
+        return;
+      }
+      message.success(`已更新封面：${describeCover(result)}`);
+      await load();
+    } catch (error) {
+      message.warning(error instanceof Error ? error.message : "封面解析失败");
+    } finally {
+      setResolvingId(null);
+    }
+  }
+
   const uploadProps: UploadProps = {
     accept: "image/jpeg,image/png,image/webp,image/gif",
     showUploadList: false,
@@ -292,7 +374,7 @@ export default function ContentManager({ resource, title }: ContentManagerProps)
         </Form>
         <Table
           loading={loading}
-          scroll={{ x: 980 }}
+          scroll={{ x: 1120 }}
           rowKey="id"
           dataSource={filteredRows}
           locale={{ emptyText: rows.length ? "没有符合条件的内容" : "暂无内容，先创建一条吧" }}
@@ -313,9 +395,20 @@ export default function ContentManager({ resource, title }: ContentManagerProps)
                 ]
               : [
                   { title: "作者", dataIndex: "author" },
-                  { title: "类型", dataIndex: "category" },
-                  { title: "国家", dataIndex: "country" },
-                  { title: "阅读状态", dataIndex: "status", render: (value: string) => <Tag>{value}</Tag> },
+                  {
+                    title: "类型",
+                    dataIndex: "category",
+                    width: 96,
+                    onCell: () => ({ style: { whiteSpace: "nowrap" } }),
+                  },
+                  { title: "国家", dataIndex: "country", width: 84 },
+                  {
+                    title: "阅读状态",
+                    dataIndex: "status",
+                    width: 112,
+                    onCell: () => ({ style: { whiteSpace: "nowrap" } }),
+                    render: (value: string) => <Tag {...readingStatusTag(value)}>{value}</Tag>,
+                  },
                 ]),
             {
               title: "简介",
@@ -396,8 +489,31 @@ export default function ContentManager({ resource, title }: ContentManagerProps)
             <Form.Item name="summary" label="简介">
               <Input.TextArea rows={3} maxLength={1000} showCount />
             </Form.Item>
-            <Form.Item name="coverUrl" label="封面地址">
-              <Input placeholder="上传图片后自动填写，也可粘贴地址" />
+            <Form.Item label="封面地址" shouldUpdate>
+              {(formInstance) => {
+                const coverUrl = formInstance.getFieldValue("coverUrl") as string | undefined;
+                return (
+                  <>
+                    <Space.Compact style={{ width: "100%" }}>
+                      <Form.Item name="coverUrl" noStyle>
+                        <Input placeholder="上传、解析或粘贴图片地址" />
+                      </Form.Item>
+                      <Button icon={<Sparkles size={16} />} loading={resolvingCover} onClick={handleResolveCover}>
+                        解析封面
+                      </Button>
+                    </Space.Compact>
+                    {coverUrl ? (
+                      <Image
+                        alt="封面预览"
+                        src={coverUrl}
+                        width={88}
+                        height={88}
+                        style={{ marginTop: 10, objectFit: "cover" }}
+                      />
+                    ) : null}
+                  </>
+                );
+              }}
             </Form.Item>
             <Form.Item label="上传封面">
               <Upload {...uploadProps}>

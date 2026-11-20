@@ -91,12 +91,19 @@ Docker Compose 使用开发环境默认凭据，仅适用于本地开发。生�
 
 ```powershell
 cd academy-front
+Copy-Item .env.example .env
 pnpm install --frozen-lockfile
-Copy-Item .env.example .env.local
+pnpm db:migrate
 pnpm dev
 ```
 
-开发服务器默认运行在 <http://localhost:3000>。直接运行前端时，请确认 MySQL、Redis 和 RustFS 已启动，并根据本机地址调整 `.env.local`。
+开发服务器默认运行在 <http://localhost:3000>。连接配置写在 `academy-front/.env`；
+本地直接运行时把 `mysql`、`redis`、`rustfs` 改成宿主机可达的地址（如 `127.0.0.1`）。
+请确认 MySQL、Redis 和 RustFS 已启动。
+
+`pnpm dev` 与 Docker 启动都不会自动同步表结构。每次修改 `academy-front/db/schema.ts`
+后，必须执行 `pnpm db:generate` 生成并提交 `drizzle/*.sql`，再执行 `pnpm db:lint`
+检查 COMMENT，最后用 `pnpm db:migrate` 应用到数据库。`pnpm db:check` 会拦住忘记生成迁移的提交。
 
 常用命令：
 
@@ -104,7 +111,9 @@ pnpm dev
 pnpm build
 pnpm start
 pnpm db:generate
+pnpm db:lint
 pnpm db:migrate
+pnpm db:check
 ```
 
 ### FastAPI 服务
