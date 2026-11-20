@@ -1,13 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
+  App,
   Button,
   Card,
   Form,
   Image,
   Input,
+  InputNumber,
   Modal,
   Popconfirm,
   Select,
@@ -16,7 +18,6 @@ import {
   Table,
   Tag,
   Upload,
-  message,
 } from "antd";
 import type { UploadProps } from "antd";
 import { Edit3, ImagePlus, Plus, Search, Sparkles, Trash2 } from "lucide-react";
@@ -35,6 +36,7 @@ type ContentRecord = {
   summary: string | null;
   coverUrl: string | null;
   isPublished: boolean;
+  sortOrder: number;
   createdAt: string;
 };
 
@@ -63,6 +65,7 @@ const readingStatusTagProps: Record<string, { color: string; variant?: "solid" }
 const readingStatusTag = (status: string) => readingStatusTagProps[status] ?? readingStatusTagProps["未读"];
 
 export default function ContentManager({ resource, title }: ContentManagerProps) {
+  const { message } = App.useApp();
   const isPlaylist = resource === "playlists";
   const nameField = isPlaylist ? "songName" : "bookName";
   const nameLabel = isPlaylist ? "歌名" : "书名";
@@ -82,6 +85,7 @@ export default function ContentManager({ resource, title }: ContentManagerProps)
   const [resolvingId, setResolvingId] = useState<number | null>(null);
   const [form] = Form.useForm();
   const [queryForm] = Form.useForm<ContentFilters>();
+  const pendingValues = useRef<Record<string, unknown> | null>(null);
   const [filters, setFilters] = useState<ContentFilters>({
     keyword: "",
     first: "",
@@ -152,20 +156,26 @@ export default function ContentManager({ resource, title }: ContentManagerProps)
   }, [load]);
 
   function openEditor(record?: ContentRecord) {
+    // 弹窗里的 Form 在打开前还没挂载，先暂存初值，等弹窗渲染后再写入
+    pendingValues.current = record ?? {
+      [nameField]: "",
+      ...(isPlaylist
+        ? { artist: "", language: "", style: "其他" }
+        : { author: "", category: "", country: "", status: "未读" }),
+      summary: "",
+      coverUrl: "",
+      isPublished: false,
+      sortOrder: rows.length ? Math.max(...rows.map((row) => row.sortOrder)) + 1 : 0,
+    };
     setEditing(record ?? null);
-    form.setFieldsValue(
-      record ?? {
-        [nameField]: "",
-        ...(isPlaylist
-          ? { artist: "", language: "", style: "其他" }
-          : { author: "", category: "", country: "", status: "未读" }),
-        summary: "",
-        coverUrl: "",
-        isPublished: false,
-      },
-    );
     setOpen(true);
   }
+
+  useEffect(() => {
+    if (!open || !pendingValues.current) return;
+    form.setFieldsValue(pendingValues.current);
+    pendingValues.current = null;
+  }, [open, form]);
 
   async function handleSubmit(values: Record<string, unknown>) {
     setSaving(true);
@@ -519,6 +529,14 @@ export default function ContentManager({ resource, title }: ContentManagerProps)
               <Upload {...uploadProps}>
                 <Button icon={<ImagePlus size={16} />}>选择图片</Button>
               </Upload>
+            </Form.Item>
+            <Form.Item
+              name="sortOrder"
+              label="排序值"
+              extra="数字越小越靠前；排序值相同时按创建时间倒序。"
+              rules={[{ required: true, message: "请输入排序值" }]}
+            >
+              <InputNumber min={0} precision={0} style={{ width: "100%" }} placeholder="例如：1" />
             </Form.Item>
             <Form.Item name="isPublished" label="公开发布" valuePropName="checked">
               <Switch checkedChildren="已发布" unCheckedChildren="草稿" />

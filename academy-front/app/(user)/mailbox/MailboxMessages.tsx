@@ -9,6 +9,7 @@ type PublicMessage = {
   id: number;
   content: string;
   adminReply: string | null;
+  isPinned?: boolean;
   createdAt: Date | string;
 };
 
@@ -43,9 +44,16 @@ export default function MailboxMessages({ messages }: { messages: PublicMessage[
       <div className="grid gap-5">
         {paginatedMessages.map((message) => (
           <article key={message.id} className="border-t border-line pt-4">
-            <time className="mb-2 block text-xs text-muted" dateTime={new Date(message.createdAt).toISOString()}>
-              {formatMessageTime(message.createdAt)}
-            </time>
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <time className="text-xs text-muted" dateTime={new Date(message.createdAt).toISOString()}>
+                {formatMessageTime(message.createdAt)}
+              </time>
+              {message.isPinned ? (
+                <span className="text-xs tracking-[0.08em] text-red" aria-label="置顶来信">
+                  置顶
+                </span>
+              ) : null}
+            </div>
             <p className="whitespace-pre-wrap">{message.content}</p>
             {message.adminReply ? <p className="mt-3 text-red">夭夭回复：{message.adminReply}</p> : null}
           </article>

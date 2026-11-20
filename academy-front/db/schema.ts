@@ -63,6 +63,7 @@ export const playlist = mysqlTable("playlist", {
   summary: text("summary"),
   coverUrl: text("cover_url"),
   isPublished: boolean("is_published").notNull().default(false),
+  sortOrder: int("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -76,6 +77,7 @@ export const booklist = mysqlTable("booklist", {
   summary: text("summary"),
   coverUrl: text("cover_url"),
   isPublished: boolean("is_published").notNull().default(false),
+  sortOrder: int("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -86,5 +88,7 @@ export const marshmallow = mysqlTable("marshmallow", {
   adminReply: text("admin_reply"),
   status: varchar("status", { length: 32 }).notNull().default("pending"),
   isPublic: boolean("is_public").notNull().default(false),
+  isPinned: boolean("is_pinned").notNull().default(false),
+  sortOrder: int("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { marshmallow } from "@/db/schema";
 import { getSession } from "@/lib/session";
@@ -8,7 +8,13 @@ import MailboxMessages from "./MailboxMessages";
 export const dynamic = "force-dynamic";
 
 export default async function MailboxPage() {
-  let publicMessages: { id: number; content: string; adminReply: string | null; createdAt: Date }[] = [];
+  let publicMessages: {
+    id: number;
+    content: string;
+    adminReply: string | null;
+    isPinned: boolean;
+    createdAt: Date;
+  }[] = [];
   let isLoggedIn = false;
   try {
     publicMessages = await db
@@ -16,11 +22,17 @@ export default async function MailboxPage() {
         id: marshmallow.id,
         content: marshmallow.content,
         adminReply: marshmallow.adminReply,
+        isPinned: marshmallow.isPinned,
         createdAt: marshmallow.createdAt,
       })
       .from(marshmallow)
       .where(eq(marshmallow.isPublic, true))
-      .orderBy(desc(marshmallow.createdAt));
+      .orderBy(
+        desc(marshmallow.isPinned),
+        asc(marshmallow.sortOrder),
+        desc(marshmallow.createdAt),
+        desc(marshmallow.id),
+      );
   } catch {
     publicMessages = [];
   }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Alert, Button, Card, Form, Input, Modal, Select, Space, Switch, Table, Tag, message } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { Alert, App, Button, Card, Form, Input, InputNumber, Modal, Select, Space, Switch, Table, Tag } from "antd";
 import { Inbox, MessageCircle, Search } from "lucide-react";
 
 type MailboxRecord = {
@@ -10,6 +10,8 @@ type MailboxRecord = {
   adminReply: string | null;
   status: "pending" | "replied" | "archived";
   isPublic: boolean;
+  isPinned: boolean;
+  sortOrder: number;
   createdAt: string;
 };
 
@@ -26,6 +28,7 @@ type MailboxFilters = {
 };
 
 export default function MailboxManager() {
+  const { message } = App.useApp();
   const [rows, setRows] = useState<MailboxRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -33,6 +36,7 @@ export default function MailboxManager() {
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
   const [queryForm] = Form.useForm<MailboxFilters>();
+  const pendingValues = useRef<Record<string, unknown> | null>(null);
   const [filters, setFilters] = useState<MailboxFilters>({
     keyword: "",
     status: undefined,
@@ -68,13 +72,22 @@ export default function MailboxManager() {
   }, []);
 
   function openEditor(record: MailboxRecord) {
-    setSelected(record);
-    form.setFieldsValue({
+    // 弹窗里的 Form 在打开前还没挂载，先暂存初值，等弹窗渲染后再写入
+    pendingValues.current = {
       adminReply: record.adminReply ?? "",
       status: record.status,
       isPublic: record.isPublic,
-    });
+      isPinned: record.isPinned,
+      sortOrder: record.sortOrder,
+    };
+    setSelected(record);
   }
+
+  useEffect(() => {
+    if (!selected || !pendingValues.current) return;
+    form.setFieldsValue(pendingValues.current);
+    pendingValues.current = null;
+  }, [selected, form]);
 
   async function update(id: number, values: Record<string, unknown>) {
     const response = await fetch(`/api/admin/mailbox/${id}`, {
@@ -103,6 +116,13 @@ export default function MailboxManager() {
   async function togglePublic(record: MailboxRecord, isPublic: boolean) {
     if (await update(record.id, { isPublic })) {
       message.success(isPublic ? "已公开展示" : "已取消公开");
+      await load();
+    }
+  }
+
+  async function togglePinned(record: MailboxRecord, isPinned: boolean) {
+    if (await update(record.id, { isPinned })) {
+      message.success(isPinned ? "已置顶" : "已取消置顶");
       await load();
     }
   }
@@ -177,7 +197,7 @@ export default function MailboxManager() {
         </Form>
         <Table
           loading={loading}
-          scroll={{ x: 760 }}
+          scroll={{ x: 880 }}
           rowKey="id"
           dataSource={filteredRows}
           locale={{ emptyText: rows.length ? "没有符合条件的棉花糖" : "暂无棉花糖" }}
@@ -201,6 +221,20 @@ export default function MailboxManager() {
               dataIndex: "isPublic",
               render: (isPublic: boolean, record: MailboxRecord) => (
                 <Switch checked={isPublic} onChange={(value) => togglePublic(record, value)} />
+              ),
+            },
+            {
+              title: "置顶",
+              dataIndex: "isPinned",
+              width: 96,
+              render: (isPinned: boolean, record: MailboxRecord) => (
+                <Switch
+                  size="small"
+                  checked={isPinned}
+                  checkedChildren="置顶"
+                  unCheckedChildren="普通"
+                  onChange={(value) => togglePinned(record, value)}
+                />
               ),
             },
             {
@@ -241,6 +275,17 @@ export default function MailboxManager() {
                 </Form.Item>
                 <Form.Item name="isPublic" label="公开展示" valuePropName="checked">
                   <Switch checkedChildren="公开" unCheckedChildren="私密" />
+                </Form.Item>
+                <Form.Item
+                  name="sortOrder"
+                  label="排序值"
+                  extra="数字越小越靠前；置顶内容始终在最前；排序值相同时按投递时间倒序。"
+                  rules={[{ required: true, message: "请输入排序值" }]}
+                >
+                  <InputNumber min={0} precision={0} style={{ width: "100%" }} placeholder="例如：1" />
+                </Form.Item>
+                <Form.Item name="isPinned" label="置顶" valuePropName="checked">
+                  <Switch checkedChildren="置顶" unCheckedChildren="普通" />
                 </Form.Item>
               </Form>
             </Space>

@@ -33,6 +33,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (typeof body.summary === "string") update.summary = body.summary.trim() || null;
   if (typeof body.coverUrl === "string") update.coverUrl = body.coverUrl.trim() || null;
   if (typeof body.isPublished === "boolean") update.isPublished = body.isPublished;
+  if (typeof body.sortOrder === "number") {
+    if (!Number.isInteger(body.sortOrder) || body.sortOrder < 0) {
+      return NextResponse.json({ error: "排序值必须是非负整数" }, { status: 400 });
+    }
+    update.sortOrder = body.sortOrder;
+  }
   if (Object.values(update).some((value) => value === "")) {
     return NextResponse.json({ error: "歌名、歌手、语言和风格不能为空" }, { status: 400 });
   }

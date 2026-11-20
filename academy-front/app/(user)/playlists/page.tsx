@@ -1,5 +1,5 @@
 import { Headphones } from "lucide-react";
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { playlist } from "@/db/schema";
 import { curatedSongs } from "@/lib/curated-content";
@@ -9,7 +9,11 @@ export const dynamic = "force-dynamic";
 
 async function getPublishedPlaylists() {
   try {
-    return await db.select().from(playlist).where(eq(playlist.isPublished, true)).orderBy(desc(playlist.createdAt));
+    return await db
+      .select()
+      .from(playlist)
+      .where(eq(playlist.isPublished, true))
+      .orderBy(asc(playlist.sortOrder), desc(playlist.createdAt), desc(playlist.id));
   } catch {
     return [];
   }

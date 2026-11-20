@@ -1,5 +1,5 @@
 import { LibraryBig } from "lucide-react";
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { booklist } from "@/db/schema";
 import { curatedBooks } from "@/lib/curated-content";
@@ -9,7 +9,11 @@ export const dynamic = "force-dynamic";
 
 async function getPublishedBooks() {
   try {
-    return await db.select().from(booklist).where(eq(booklist.isPublished, true)).orderBy(desc(booklist.createdAt));
+    return await db
+      .select()
+      .from(booklist)
+      .where(eq(booklist.isPublished, true))
+      .orderBy(asc(booklist.sortOrder), desc(booklist.createdAt), desc(booklist.id));
   } catch {
     return [];
   }

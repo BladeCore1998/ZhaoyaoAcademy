@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button, ConfigProvider, Dropdown, Drawer, Layout, Menu, Tag, Typography } from "antd";
+import { App, Button, ConfigProvider, Dropdown, Drawer, Layout, Menu, Tag, Typography } from "antd";
 import {
   BookOpen,
   DoorOpen,
@@ -190,108 +190,114 @@ export default function AdminShell({ children }: Readonly<{ children: React.Reac
 
   return (
     <ConfigProvider theme={theme}>
-      <Layout className="admin-layout" data-season={activeSeason}>
-        <Sider className="admin-desktop-sider" breakpoint="lg" collapsedWidth="0" trigger={null}>
-          <Link className="admin-brand" href="/admin">
-            <span className="admin-brand-art" aria-hidden />
-            <span className="admin-brand-seal">
-              <img src="/inspiration/TouXiang.webp" alt="" />
-            </span>
-            <span className="admin-brand-copy">
-              <strong>招摇书院</strong>
-              <small>SHU YUAN · 管理处</small>
-            </span>
-          </Link>
-          <div className="admin-nav-label">书院事务</div>
-          <Menu theme="dark" mode="inline" selectedKeys={[selectedKey]} items={getNavigationItems()} />
-          <div className="admin-sider-footer">
-            <span className="admin-online-dot" />
-            书院日常 · 正常运行
-          </div>
-        </Sider>
-        <Layout className="admin-main-layout">
-          <Header className="admin-header">
-            <div className="admin-header-left">
-              <Button
-                className="admin-mobile-menu-button"
-                type="text"
-                aria-label="打开管理菜单"
-                icon={<MenuIcon size={20} />}
-                onClick={() => setMobileMenuOpen(true)}
-              />
-              <div>
-                <div className="admin-breadcrumb">
-                  <span>招摇书院</span>
-                  <span className="admin-breadcrumb-divider">/</span>
-                  <span>{currentPage.section}</span>
-                </div>
-                <Typography.Text strong className="admin-header-title">
-                  {currentPage.title}
-                </Typography.Text>
-              </div>
-            </div>
-            <div className="admin-header-right">
-              <Dropdown
-                menu={{
-                  items: seasonMenuItems,
-                  selectedKeys: [seasonPreference],
-                  onClick: ({ key }) => selectSeason(key as SeasonPreference),
-                }}
-                trigger={["click"]}
-                placement="bottomRight"
-              >
-                <Button className="admin-season-button" icon={<Palette size={15} />}>
-                  <span>{seasonOptions[activeSeason].shortLabel}书院</span>
-                </Button>
-              </Dropdown>
-              <Tag className="admin-header-status" variant="filled" color="success">
-                <span className="admin-online-dot" />
-                管理端
-              </Tag>
-              <Link className="admin-back-link" href="/">
-                <House size={15} />
-                <span>返回前台</span>
-              </Link>
-              <Button
-                className="admin-signout-button"
-                type="text"
-                icon={<DoorOpen size={16} />}
-                onClick={async () => {
-                  await fetch("/api/auth/sign-out", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: "{}",
-                    credentials: "same-origin",
-                  });
-                  window.location.href = "/login";
-                }}
-              >
-                退出
-              </Button>
-            </div>
-          </Header>
-          <Content className="admin-content">{children}</Content>
-        </Layout>
-        <Drawer
-          className={`admin-mobile-drawer admin-mobile-drawer-${activeSeason}`}
-          title={
-            <Link className="admin-drawer-brand" href="/admin">
+      <App>
+        <Layout className="admin-layout" data-season={activeSeason}>
+          <Sider className="admin-desktop-sider" breakpoint="lg" collapsedWidth="0" trigger={null}>
+            <Link className="admin-brand" href="/admin">
+              <span className="admin-brand-art" aria-hidden />
               <span className="admin-brand-seal">
                 <img src="/inspiration/TouXiang.webp" alt="" />
               </span>
-              <span>招摇书院</span>
+              <span className="admin-brand-copy">
+                <strong>招摇书院</strong>
+                <small>SHU YUAN · 管理处</small>
+              </span>
             </Link>
-          }
-          placement="left"
-          open={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-          closeIcon={<X size={18} />}
-          size={280}
-          styles={{ body: { padding: 0 } }}
-        >
-          <Menu mode="inline" selectedKeys={[selectedKey]} items={getNavigationItems(() => setMobileMenuOpen(false))} />
-        </Drawer>
-      </Layout>
+            <div className="admin-nav-label">书院事务</div>
+            <Menu theme="dark" mode="inline" selectedKeys={[selectedKey]} items={getNavigationItems()} />
+            <div className="admin-sider-footer">
+              <span className="admin-online-dot" />
+              书院日常 · 正常运行
+            </div>
+          </Sider>
+          <Layout className="admin-main-layout">
+            <Header className="admin-header">
+              <div className="admin-header-left">
+                <Button
+                  className="admin-mobile-menu-button"
+                  type="text"
+                  aria-label="打开管理菜单"
+                  icon={<MenuIcon size={20} />}
+                  onClick={() => setMobileMenuOpen(true)}
+                />
+                <div>
+                  <div className="admin-breadcrumb">
+                    <span>招摇书院</span>
+                    <span className="admin-breadcrumb-divider">/</span>
+                    <span>{currentPage.section}</span>
+                  </div>
+                  <Typography.Text strong className="admin-header-title">
+                    {currentPage.title}
+                  </Typography.Text>
+                </div>
+              </div>
+              <div className="admin-header-right">
+                <Dropdown
+                  menu={{
+                    items: seasonMenuItems,
+                    selectedKeys: [seasonPreference],
+                    onClick: ({ key }) => selectSeason(key as SeasonPreference),
+                  }}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
+                  <Button className="admin-season-button" icon={<Palette size={15} />}>
+                    <span>{seasonOptions[activeSeason].shortLabel}书院</span>
+                  </Button>
+                </Dropdown>
+                <Tag className="admin-header-status" variant="filled" color="success">
+                  <span className="admin-online-dot" />
+                  管理端
+                </Tag>
+                <Link className="admin-back-link" href="/">
+                  <House size={15} />
+                  <span>返回前台</span>
+                </Link>
+                <Button
+                  className="admin-signout-button"
+                  type="text"
+                  icon={<DoorOpen size={16} />}
+                  onClick={async () => {
+                    await fetch("/api/auth/sign-out", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: "{}",
+                      credentials: "same-origin",
+                    });
+                    window.location.href = "/login";
+                  }}
+                >
+                  退出
+                </Button>
+              </div>
+            </Header>
+            <Content className="admin-content">{children}</Content>
+          </Layout>
+          <Drawer
+            className={`admin-mobile-drawer admin-mobile-drawer-${activeSeason}`}
+            title={
+              <Link className="admin-drawer-brand" href="/admin">
+                <span className="admin-brand-seal">
+                  <img src="/inspiration/TouXiang.webp" alt="" />
+                </span>
+                <span>招摇书院</span>
+              </Link>
+            }
+            placement="left"
+            open={mobileMenuOpen}
+            onClose={() => setMobileMenuOpen(false)}
+            closeIcon={<X size={18} />}
+            size={280}
+            styles={{ body: { padding: 0 } }}
+          >
+            <Menu
+              mode="inline"
+              selectedKeys={[selectedKey]}
+              items={getNavigationItems(() => setMobileMenuOpen(false))}
+            />
+          </Drawer>
+        </Layout>
+      </App>
     </ConfigProvider>
   );
 }

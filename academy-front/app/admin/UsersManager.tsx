@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Alert, Button, Card, Form, Input, Modal, Select, Space, Table, Tag, message } from "antd";
+import { Alert, App, Button, Card, Form, Input, Modal, Select, Space, Table, Tag } from "antd";
 import { Copy, KeyRound, RotateCcw, Search, Users } from "lucide-react";
 
 type ManagedUser = {
@@ -24,6 +24,7 @@ function formatDate(value: string) {
 }
 
 export default function UsersManager() {
+  const { message } = App.useApp();
   const [rows, setRows] = useState<ManagedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -57,8 +58,13 @@ export default function UsersManager() {
 
   function openPasswordEditor(user: ManagedUser) {
     setPasswordUser(user);
-    form.resetFields();
   }
+
+  useEffect(() => {
+    if (!passwordUser) return;
+    // 弹窗里的 Form 在打开前还没挂载，等它渲染后再清空上一次输入的密码
+    form.resetFields();
+  }, [passwordUser, form]);
 
   async function changePassword(values: PasswordForm) {
     if (!passwordUser) return;

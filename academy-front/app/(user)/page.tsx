@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { ArrowUpRight, BookOpen, Feather, Mail, Music2, Radio, Sparkles } from "lucide-react";
 import { db } from "@/db";
 import { playlist } from "@/db/schema";
@@ -38,7 +38,7 @@ export default async function HomePage() {
       .select()
       .from(playlist)
       .where(eq(playlist.isPublished, true))
-      .orderBy(desc(playlist.createdAt))
+      .orderBy(asc(playlist.sortOrder), desc(playlist.createdAt), desc(playlist.id))
       .limit(1);
   } catch {
     publishedSong = undefined;

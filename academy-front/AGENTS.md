@@ -79,6 +79,7 @@ pnpm db:migrate
 ## 代码质量门禁
 
 - JavaScript、TypeScript、JSX、CSS、JSON、Markdown 和 YAML 使用 Prettier 统一格式，配置位于 `.prettierrc.json`，忽略规则位于 `.prettierignore`。
+- 根目录 `.gitattributes` 将 `academy-front/**` 固定为 LF 换行；Windows 的 `core.autocrlf` 不应改变这些文件，否则仅因 CRLF 差异就会被 `pnpm format:check` 判为未格式化。
 - ESLint 使用 Flat Config，配置位于 `eslint.config.mjs`，并基于 `eslint-config-next@16.3.8` 检查 Next.js、React、TypeScript 和可访问性规则。
 - 当前工具版本固定为 ESLint `9.39.4`、Prettier `3.9.9`、Husky `9.1.7`、lint-staged `16.2.7`；TypeScript 固定为 `6.0.2`，因为当前 `typescript-eslint` 要求 TypeScript `<6.1.0`。升级 TypeScript 或 ESLint 前必须重新验证 parser、`eslint-config-next` 和 Docker Node 版本的兼容性。
 - `pnpm format:check`、`pnpm lint` 和 `pnpm typecheck` 是提交前必须通过的检查；`pnpm check` 是本项目统一门禁命令。

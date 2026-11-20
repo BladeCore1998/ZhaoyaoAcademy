@@ -1,7 +1,7 @@
 import nextConfig from "eslint-config-next";
 import prettierConfig from "eslint-config-prettier";
 
-export default [
+const config = [
   ...nextConfig,
   prettierConfig,
   {
@@ -21,3 +21,5 @@ export default [
     ],
   },
 ];
+
+export default config;
