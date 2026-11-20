@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Flower2, Leaf, Library, Mail, Music2, Palette, Snowflake, Sun } from "lucide-react";
+import { Flower2, LayoutDashboard, Leaf, Library, Mail, Music2, Palette, Snowflake, Sun } from "lucide-react";
 import { getCurrentSeason, isSeasonPreference, type Season, type SeasonPreference } from "@/lib/season";
 
 const seasonOptions: Record<Season, { label: string; shortLabel: string; icon: React.ReactNode }> = {
@@ -19,10 +19,11 @@ const links = [
 ];
 
 export default function UserSeasonTheme({
+  isAdmin,
   isLoggedIn,
   initialSeason,
   children,
-}: Readonly<{ isLoggedIn: boolean; initialSeason: Season; children: React.ReactNode }>) {
+}: Readonly<{ isAdmin: boolean; isLoggedIn: boolean; initialSeason: Season; children: React.ReactNode }>) {
   const [currentSeason, setCurrentSeason] = useState<Season>(initialSeason);
   const [seasonPreference, setSeasonPreference] = useState<SeasonPreference>("auto");
   const activeSeason = seasonPreference === "auto" ? currentSeason : seasonPreference;
@@ -73,6 +74,12 @@ export default function UserSeasonTheme({
           ))}
         </nav>
         <div className="user-header-actions">
+          {isAdmin ? (
+            <Link className="button-quiet user-admin-link" href="/admin" aria-label="管理书院" title="管理书院">
+              <LayoutDashboard size={15} aria-hidden="true" />
+              <span>管理书院</span>
+            </Link>
+          ) : null}
           <details className="user-season-picker">
             <summary aria-label="切换四季主题" title="切换四季主题">
               <Palette size={15} />

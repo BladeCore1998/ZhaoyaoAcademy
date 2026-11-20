@@ -6,7 +6,11 @@ export default async function UserLayout({ children }: Readonly<{ children: Reac
   const session = await getSession().catch(() => null);
 
   return (
-    <UserSeasonTheme isLoggedIn={Boolean(session)} initialSeason={getCurrentSeason()}>
+    <UserSeasonTheme
+      isAdmin={session?.user.role === "admin"}
+      isLoggedIn={Boolean(session)}
+      initialSeason={getCurrentSeason()}
+    >
       {children}
     </UserSeasonTheme>
   );
