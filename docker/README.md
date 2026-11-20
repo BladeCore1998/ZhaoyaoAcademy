@@ -28,8 +28,8 @@ Copy-Item docker/front/.env.example docker/front/.env
 Copy-Item docker/py/.env.example docker/py/.env
 ```
 
-common 与 front 的 RustFS 账号密码须保持一致。前端认证密钥和 URL 位于
-`docker/front/.env`；修改 `FRONT_PORT` 后应同步修改 `BETTER_AUTH_URL`。
+common 与 front 的 RustFS 账号密码须保持一致。前端认证密钥位于
+`docker/front/.env`；访问地址由请求自动推导，不依赖 URL 配置。
 前端应用和迁移服务均加载同目录 `.env`，覆盖 `academy-front/.env` 中的同名配置。
 Compose 的端口和连接配置通过以下 `--env-file` 显式加载。
 
