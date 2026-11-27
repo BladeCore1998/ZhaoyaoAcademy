@@ -1,8 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
-import { asc, desc, eq } from "drizzle-orm";
-import { ArrowUpRight, BookOpen, Feather, Mail, Music2, Radio, Sparkles } from "lucide-react";
+import { and, asc, desc, eq } from "drizzle-orm";
+import { ArrowUpRight, BookOpen, Feather, Mail, Music2, Radio } from "lucide-react";
 import { db } from "@/db";
-import { playlist } from "@/db/schema";
+import { booklist, playlist } from "@/db/schema";
 import { curatedBooks, curatedSongs, materialNotes } from "@/lib/curated-content";
 
 export const dynamic = "force-dynamic";
@@ -31,19 +32,75 @@ const features = [
   },
 ];
 
-export default async function HomePage() {
-  let publishedSong: typeof playlist.$inferSelect | undefined;
+async function getFeaturedSong() {
   try {
-    [publishedSong] = await db
+    const [song] = await db
       .select()
       .from(playlist)
       .where(eq(playlist.isPublished, true))
       .orderBy(asc(playlist.sortOrder), desc(playlist.createdAt), desc(playlist.id))
       .limit(1);
+    return song;
   } catch {
-    publishedSong = undefined;
+    return undefined;
   }
+}
 
+async function getFeaturedBookCover(bookName: string) {
+  try {
+    const [book] = await db
+      .select({ coverUrl: booklist.coverUrl })
+      .from(booklist)
+      .where(and(eq(booklist.bookName, bookName), eq(booklist.isPublished, true)))
+      .orderBy(asc(booklist.sortOrder), desc(booklist.createdAt), desc(booklist.id))
+      .limit(1);
+    return book?.coverUrl;
+  } catch {
+    return undefined;
+  }
+}
+
+type FeaturedCardProps = {
+  kind: "song" | "book";
+  coverUrl: string;
+  label: string;
+  title: string;
+  details: string;
+  note: string;
+  link: { href: string; label: string };
+};
+
+function FeaturedCard({ kind, coverUrl, label, title, details, note, link }: FeaturedCardProps) {
+  const isSong = kind === "song";
+  const secondaryText = isSong ? "text-muted" : "opacity-85";
+
+  return (
+    <article
+      className={`user-featured-${kind} relative grid grid-cols-[minmax(0,68%)] items-start overflow-hidden p-7 [overflow-wrap:anywhere] md:row-span-5 md:grid-cols-[minmax(0,62%)] md:grid-rows-subgrid md:p-9`}
+    >
+      <div className="absolute inset-y-0 right-0 w-[38%] opacity-25 mix-blend-multiply">
+        <Image className="object-cover" src={coverUrl} alt="" fill unoptimized />
+      </div>
+      <p className="eyebrow relative">{label}</p>
+      <h2 className="relative mt-8 text-3xl font-medium">{title}</h2>
+      <p className={`relative mt-2 ${secondaryText}`}>{details}</p>
+      <p className={`relative mt-8 leading-8 ${secondaryText}`}>{note}</p>
+      <Link
+        className={`relative mt-8 min-h-[42px] justify-self-start ${isSong ? "button-quiet" : "user-feature-link"}`}
+        href={link.href}
+      >
+        {link.label} <ArrowUpRight size={16} />
+      </Link>
+    </article>
+  );
+}
+
+export default async function HomePage() {
+  const featuredBook = curatedBooks[1];
+  const [publishedSong, bookCoverUrl] = await Promise.all([
+    getFeaturedSong(),
+    getFeaturedBookCover(featuredBook.bookName),
+  ]);
   const curatedSong = curatedSongs[0];
   const featuredSong = publishedSong
     ? {
@@ -54,7 +111,6 @@ export default async function HomePage() {
         coverUrl: publishedSong.coverUrl || "/inspiration/3.webp",
       }
     : { ...curatedSong, coverUrl: "/inspiration/3.webp" };
-  const featuredBook = curatedBooks[1];
 
   return (
     <>
@@ -83,39 +139,25 @@ export default async function HomePage() {
           ))}
         </section>
 
-        <section className="grid gap-4 py-12 md:grid-cols-[1.1fr_.9fr]">
-          <article className="user-featured-song relative overflow-hidden p-7 md:p-9">
-            <img
-              className="absolute inset-y-0 right-0 h-full w-[38%] object-cover opacity-25 mix-blend-multiply"
-              src={featuredSong.coverUrl}
-              alt=""
-            />
-            <div className="absolute right-7 top-7 text-red/70">
-              <Sparkles size={20} />
-            </div>
-            <p className="eyebrow">院藏一曲</p>
-            <div className="relative max-w-[62%] max-md:max-w-[68%]">
-              <h2 className="mt-8 text-3xl font-medium">{featuredSong.songName}</h2>
-              <p className="mt-2 text-muted">
-                {featuredSong.artist} · {featuredSong.style}
-              </p>
-              <p className="mt-8 max-w-[360px] leading-8 text-muted">{featuredSong.note}</p>
-              <Link className="button-quiet mt-8" href="/playlists">
-                浏览完整歌单 <ArrowUpRight size={16} />
-              </Link>
-            </div>
-          </article>
-          <article className="user-featured-book p-7 md:p-9">
-            <p className="eyebrow">案头的一本</p>
-            <h2 className="mt-8 text-3xl font-medium">{featuredBook.bookName}</h2>
-            <p className="mt-2 opacity-85">
-              {featuredBook.author} · {featuredBook.category}
-            </p>
-            <p className="mt-8 leading-8 opacity-85">{featuredBook.note}</p>
-            <Link className="user-feature-link mt-8" href="/books">
-              翻开书单 <ArrowUpRight size={16} />
-            </Link>
-          </article>
+        <section className="grid gap-4 py-12 md:grid-cols-2 md:gap-y-0">
+          <FeaturedCard
+            kind="song"
+            coverUrl={featuredSong.coverUrl}
+            label="院藏一曲"
+            title={featuredSong.songName}
+            details={`${featuredSong.artist} · ${featuredSong.style}`}
+            note={featuredSong.note}
+            link={{ href: "/playlists", label: "浏览歌单" }}
+          />
+          <FeaturedCard
+            kind="book"
+            coverUrl={bookCoverUrl || "/inspiration/3.2.webp"}
+            label="案头的一本"
+            title={featuredBook.bookName}
+            details={`${featuredBook.author} · ${featuredBook.category}`}
+            note={featuredBook.note}
+            link={{ href: "/books", label: "翻开书单" }}
+          />
         </section>
 
         <section className="grid gap-4 md:grid-cols-4" aria-label="书院入口">

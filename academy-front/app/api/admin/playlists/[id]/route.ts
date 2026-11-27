@@ -1,10 +1,9 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { playlist, songStyles } from "@/db/schema";
+import { playlist } from "@/db/schema";
 import { requireAdmin } from "@/lib/admin";
-
-type SongStyle = (typeof songStyles)[number];
+import { readSongStyle, songStyleError } from "@/lib/song-style";
 
 function parseId(value: string) {
   const id = Number(value);
@@ -23,12 +22,10 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (typeof body.songName === "string") update.songName = body.songName.trim();
   if (typeof body.artist === "string") update.artist = body.artist.trim();
   if (typeof body.language === "string") update.language = body.language.trim();
-  if (typeof body.style === "string") {
-    const style = body.style.trim();
-    if (!songStyles.includes(style as SongStyle)) {
-      return NextResponse.json({ error: "风格无效" }, { status: 400 });
-    }
-    update.style = style as SongStyle;
+  if ("style" in body) {
+    const style = readSongStyle(body.style);
+    if (!style) return NextResponse.json({ error: songStyleError }, { status: 400 });
+    update.style = style;
   }
   if (typeof body.summary === "string") update.summary = body.summary.trim() || null;
   if (typeof body.coverUrl === "string") update.coverUrl = body.coverUrl.trim() || null;
@@ -40,7 +37,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     update.sortOrder = body.sortOrder;
   }
   if (Object.values(update).some((value) => value === "")) {
-    return NextResponse.json({ error: "歌名、歌手、语言和风格不能为空" }, { status: 400 });
+    return NextResponse.json({ error: "歌名、歌手和语言不能为空" }, { status: 400 });
   }
 
   await db.update(playlist).set(update).where(eq(playlist.id, id));

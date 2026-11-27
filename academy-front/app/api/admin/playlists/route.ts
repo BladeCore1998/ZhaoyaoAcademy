@@ -1,22 +1,16 @@
 import { asc, desc, eq, max } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { playlist, songStyles } from "@/db/schema";
+import { playlist } from "@/db/schema";
 import { requireAdmin } from "@/lib/admin";
-
-type SongStyle = (typeof songStyles)[number];
-
-function isSongStyle(value: string): value is SongStyle {
-  return songStyles.includes(value as SongStyle);
-}
+import { readSongStyle, songStyleError } from "@/lib/song-style";
 
 function readContentInput(body: unknown) {
   const value = body as Record<string, unknown>;
   const songName = typeof value.songName === "string" ? value.songName.trim() : "";
   const artist = typeof value.artist === "string" ? value.artist.trim() : "";
   const language = typeof value.language === "string" ? value.language.trim() : "";
-  const styleValue = typeof value.style === "string" ? value.style.trim() : "";
-  const style = isSongStyle(styleValue) ? styleValue : null;
+  const style = readSongStyle(value.style);
   const summary = typeof value.summary === "string" ? value.summary.trim() : "";
   const coverUrl = typeof value.coverUrl === "string" ? value.coverUrl.trim() : "";
   const sortOrderValue = value.sortOrder;
@@ -52,11 +46,11 @@ export async function POST(request: Request) {
   const auth = await requireAdmin();
   if (auth.response) return auth.response;
 
-  const input = readContentInput(await request.json());
-  if (!input.songName || !input.artist || !input.language || !input.style) {
-    return NextResponse.json({ error: "歌名、歌手、语言和风格不能为空" }, { status: 400 });
+  const { style, ...input } = readContentInput(await request.json());
+  if (!input.songName || !input.artist || !input.language) {
+    return NextResponse.json({ error: "歌名、歌手和语言不能为空" }, { status: 400 });
   }
-  const style = input.style;
+  if (!style) return NextResponse.json({ error: songStyleError }, { status: 400 });
   const [aggregate] = await db.select({ value: max(playlist.sortOrder) }).from(playlist);
   const sortOrder = input.sortOrder ?? (aggregate?.value == null ? 0 : Number(aggregate.value) + 1);
 

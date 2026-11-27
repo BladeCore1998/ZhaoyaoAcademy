@@ -21,6 +21,7 @@ import {
 } from "antd";
 import type { UploadProps } from "antd";
 import { Edit3, ImagePlus, Plus, Search, Sparkles, Trash2 } from "lucide-react";
+import { songStyleMaxLength } from "@/lib/song-style";
 
 type ContentRecord = {
   id: number;
@@ -52,8 +53,6 @@ type ContentFilters = {
   status: string;
   visibility: "all" | "published" | "draft";
 };
-
-const songStyles = ["流行", "古风", "抒情", "民谣", "中国风", "其他"];
 
 // 未读：暖灰（弱化）；在读：实心琥珀（焦点）；已读：浅墨玉绿（完成但不抢眼）
 const readingStatusTagProps: Record<string, { color: string; variant?: "solid" }> = {
@@ -104,13 +103,9 @@ export default function ContentManager({ resource, title }: ContentManagerProps)
   const secondOptions = useMemo(
     () =>
       Array.from(
-        new Set(
-          (isPlaylist ? songStyles : rows.map((row) => row[secondField as keyof ContentRecord])).filter(
-            (value): value is string => !!value,
-          ),
-        ),
+        new Set(rows.map((row) => row[secondField as keyof ContentRecord]).filter((value): value is string => !!value)),
       ).sort(),
-    [isPlaylist, secondField, rows],
+    [secondField, rows],
   );
 
   const filteredRows = rows.filter((row) => {
@@ -476,8 +471,12 @@ export default function ContentManager({ resource, title }: ContentManagerProps)
                 <Form.Item name="language" label="语言" rules={[{ required: true, message: "请输入语言" }]}>
                   <Input placeholder="例如：华语" maxLength={64} />
                 </Form.Item>
-                <Form.Item name="style" label="风格" rules={[{ required: true, message: "请选择风格" }]}>
-                  <Select options={songStyles.map((value) => ({ label: value, value }))} />
+                <Form.Item
+                  name="style"
+                  label="风格"
+                  rules={[{ required: true, whitespace: true, message: "请输入风格" }]}
+                >
+                  <Input maxLength={songStyleMaxLength} />
                 </Form.Item>
               </>
             ) : (

@@ -1,6 +1,6 @@
 import { boolean, datetime, index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { songStyleMaxLength } from "../lib/song-style";
 
-export const songStyles = ["流行", "古风", "抒情", "民谣", "中国风", "其他"] as const;
 export const bookStatuses = ["未读", "在读", "已读"] as const;
 
 export const user = mysqlTable("user", {
@@ -59,7 +59,7 @@ export const playlist = mysqlTable("playlist", {
   songName: varchar("song_name", { length: 255 }).notNull(),
   artist: varchar("artist", { length: 255 }).notNull(),
   language: varchar("language", { length: 64 }).notNull(),
-  style: mysqlEnum("style", songStyles).notNull(),
+  style: varchar("style", { length: songStyleMaxLength }).notNull(),
   summary: text("summary"),
   coverUrl: text("cover_url"),
   isPublished: boolean("is_published").notNull().default(false),

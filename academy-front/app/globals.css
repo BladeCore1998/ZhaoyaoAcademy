@@ -450,14 +450,15 @@
 .user-featured-song,
 .user-featured-book {
   border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--featured-background) 74%, transparent);
 }
 
 .user-featured-song {
-  background: color-mix(in srgb, var(--paper) 74%, transparent);
+  --featured-background: var(--paper);
 }
 
 .user-featured-book {
-  background: color-mix(in srgb, var(--red) 65%, transparent);
+  --featured-background: var(--red);
   color: var(--paper);
 }
 
@@ -469,9 +470,10 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid color-mix(in srgb, var(--paper) 72%, transparent);
-  padding-bottom: 4px;
   color: var(--paper);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--paper) 72%, transparent);
+  text-underline-offset: 5px;
 }
 
 .user-footer {

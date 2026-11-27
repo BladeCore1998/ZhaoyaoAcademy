@@ -3,6 +3,7 @@ import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { playlist } from "@/db/schema";
 import { curatedSongs } from "@/lib/curated-content";
+import { getSongStyleOptions } from "@/lib/song-style";
 import PlaylistSearch from "./PlaylistSearch";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +20,14 @@ async function getPublishedPlaylists() {
   }
 }
 
-export default async function PlaylistsPage() {
-  const playlists = await getPublishedPlaylists();
+export default async function PlaylistsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ style?: string | string[] }>;
+}) {
+  const [playlists, { style }] = await Promise.all([getPublishedPlaylists(), searchParams]);
+  const styles = getSongStyleOptions(playlists);
+  const initialStyle = typeof style === "string" && styles.includes(style) ? style : "";
   const hasDatabaseItems = playlists.length > 0;
 
   return (
@@ -39,6 +46,9 @@ export default async function PlaylistsPage() {
         </div>
       </div>
       <PlaylistSearch
+        key={initialStyle}
+        initialStyle={initialStyle}
+        styles={styles}
         items={
           hasDatabaseItems
             ? playlists.map((item) => ({

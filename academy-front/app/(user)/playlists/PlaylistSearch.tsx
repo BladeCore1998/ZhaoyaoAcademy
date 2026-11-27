@@ -1,11 +1,11 @@
 "use client";
 
-import { Dice5, Music2, Play, Search, Shuffle, X } from "lucide-react";
+import { Dice5, Music2, Search, Shuffle, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { matchesSearch, normalizeSearchText } from "@/lib/content-search";
 import Pagination from "@/components/Pagination";
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 20;
 
 type PlaylistSearchItem = {
   id: string;
@@ -20,6 +20,8 @@ type PlaylistSearchItem = {
 
 type PlaylistSearchProps = {
   items: PlaylistSearchItem[];
+  styles: string[];
+  initialStyle: string;
 };
 
 function PlaylistCover({ src, songName }: { src?: string | null; songName: string }) {
@@ -42,16 +44,15 @@ function PlaylistCover({ src, songName }: { src?: string | null; songName: strin
   );
 }
 
-export default function PlaylistSearch({ items }: PlaylistSearchProps) {
+export default function PlaylistSearch({ items, styles, initialStyle }: PlaylistSearchProps) {
   const [query, setQuery] = useState("");
   const [language, setLanguage] = useState("");
-  const [style, setStyle] = useState("");
+  const [style, setStyle] = useState(initialStyle);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSong, setSelectedSong] = useState<PlaylistSearchItem | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const normalizedQuery = normalizeSearchText(query);
   const languages = useMemo(() => Array.from(new Set(items.map((item) => item.language))).sort(), [items]);
-  const styles = useMemo(() => Array.from(new Set(items.map((item) => item.style))).sort(), [items]);
   const filteredItems = useMemo(
     () =>
       items.filter(
@@ -137,7 +138,7 @@ export default function PlaylistSearch({ items }: PlaylistSearchProps) {
           ))}
         </select>
         <select
-          className="border border-line bg-transparent px-3 py-3 text-sm text-ink"
+          className="max-w-full border border-line bg-transparent px-3 py-3 text-sm text-ink"
           value={style}
           onChange={(event) => setStyle(event.target.value)}
           aria-label="按风格筛选"
@@ -164,18 +165,18 @@ export default function PlaylistSearch({ items }: PlaylistSearchProps) {
       <p className="mt-3 text-xs text-muted" role="status" aria-live="polite">
         {normalizedQuery || language || style ? `找到 ${filteredItems.length} 首院藏` : `共 ${items.length} 首院藏`}
       </p>
-      <div className="mt-5 border-t border-line">
+      <div className="mt-5 grid gap-x-8 border-t border-line md:grid-cols-2">
         {paginatedItems.length > 0 ? (
           paginatedItems.map((item, index) => (
             <article
-              className="grid grid-cols-[64px_72px_minmax(0,1fr)_auto] items-center gap-4 border-b border-line py-5 transition-colors hover:bg-[rgba(255,251,241,.32)] max-md:grid-cols-[34px_58px_minmax(0,1fr)_auto] max-md:gap-3"
+              className="grid grid-cols-[30px_58px_minmax(0,1fr)] items-center gap-3 border-b border-line py-5 transition-colors hover:bg-[rgba(255,251,241,.32)] md:grid-cols-[36px_72px_minmax(0,1fr)] md:gap-4"
               key={item.id}
             >
               <span className="text-lg text-gold">
                 {String((currentPage - 1) * ITEMS_PER_PAGE + index + 1).padStart(2, "0")}
               </span>
               <PlaylistCover src={item.coverUrl} songName={item.songName} />
-              <div>
+              <div className="[overflow-wrap:anywhere]">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <h2 className="font-medium">{item.songName}</h2>
                   <span className="text-xs tracking-[0.08em] text-red">{item.style}</span>
@@ -184,17 +185,10 @@ export default function PlaylistSearch({ items }: PlaylistSearchProps) {
                   {item.artist} · {item.language} · {item.summary}
                 </p>
               </div>
-              <button
-                className="grid size-[38px] place-items-center border border-red bg-transparent text-red transition-colors hover:bg-red/8"
-                type="button"
-                aria-label={`播放${item.songName}`}
-              >
-                <Play size={16} />
-              </button>
             </article>
           ))
         ) : (
-          <div className="border-b border-line py-12 text-center text-sm text-muted">
+          <div className="col-span-full border-b border-line py-12 text-center text-sm text-muted">
             没有找到匹配的歌单，请换个关键词试试。
           </div>
         )}
